@@ -7,31 +7,93 @@
 /*=====[Inclusions of function dependencies]=================================*/
 
 #include "dominguez-iso1.h"
+#include "osKernel.h"
+#include "cmsis_gcc.h"
 #include "sapi.h"
-
 /*=====[Definition macros of private constants]==============================*/
 
 /*=====[Definitions of extern global variables]==============================*/
 
+/*=====[Definitions of private methods]======================================*/
+
+void SystemClock_Config(void);
+
+static void task1(void);
+
+static void task2(void);
+
+static void task3(void);
+
 /*=====[Definitions of public global variables]==============================*/
+
 
 /*=====[Definitions of private global variables]=============================*/
 
+static osTaskObject osTask1;
+static osTaskObject osTask2;
+static osTaskObject osTask3;
+
 /*=====[Main function, program entry point after power on or reset]==========*/
 
-int main( void )
-{
-   // ----- Setup -----------------------------------
-   boardInit();
 
-   // ----- Repeat for ever -------------------------
-   while( true ) {
-      gpioToggle(LED);
-      delay(500);
-   }
+int main(void) {
+    // ----- Setup -----------------------------------
 
-   // YOU NEVER REACH HERE, because this program runs directly or on a
-   // microcontroller and is not called by any Operating System, as in the 
-   // case of a PC program.
-   return 0;
+    // ----- Repeat for ever -------------------------
+    // Initialize all configured peripherals
+    boardConfig();
+    osTaskCreate(&osTask1, task1);
+    osTaskCreate(&osTask2, task2);
+    osTaskCreate(&osTask3, task3);
+
+
+    osStart();
+
+    while (1) {
+        __WFI();
+    }
+
+    // YOU NEVER REACH HERE, because this program runs directly or on a
+    // microcontroller and is not called by any Operating System, as in the
+    // case of a PC program.
+    return 0;
+}
+
+static void task1(void) {
+    uint32_t i = 0;
+    tick_tipe_t last_enter = 0;
+
+    while (1) {
+        if ((osGetTickCount() - last_enter) >= 2000) {
+            last_enter = osGetTickCount();
+            gpioToggle(LED1);
+        }
+        i++;
+    }
+}
+
+static void task2(void) {
+    uint32_t j = 0;
+    tick_tipe_t last_enter = 0;
+
+    while (1) {
+        if ((osGetTickCount() - last_enter) >= 1000) {
+            last_enter = osGetTickCount();
+            gpioToggle(LED2);
+        }
+        j++;
+    }
+}
+
+static void task3(void) {
+    uint32_t k = 0;
+    tick_tipe_t last_enter = 0;
+
+    while (1) {
+        if ((osGetTickCount() - last_enter) >= 500) {
+            last_enter = osGetTickCount();
+            gpioToggle(LED3);
+        }
+        k++;
+    }
 }

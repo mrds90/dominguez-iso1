@@ -5,6 +5,7 @@ OPT=g
 USE_NANO=n
 SEMIHOST=n
 USE_FPU=y
+DEFINES+=TICK_OVER_RTOS
 
 # Libraries
 

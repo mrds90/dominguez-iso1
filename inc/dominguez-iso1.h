@@ -6,8 +6,8 @@
 
 /*=====[Avoid multiple inclusion - begin]====================================*/
 
-#ifndef __DOMINGUEZ-ISO1_H__
-#define __DOMINGUEZ-ISO1_H__
+#ifndef __DOMINGUEZ_ISO1_H__
+#define __DOMINGUEZ_ISO1_H__
 
 /*=====[Inclusions of public function dependencies]==========================*/
 
@@ -38,4 +38,4 @@ extern "C" {
 
 /*=====[Avoid multiple inclusion - end]======================================*/
 
-#endif /* __DOMINGUEZ-ISO1_H__ */
+#endif /* __DOMINGUEZ_ISO1_H__ */

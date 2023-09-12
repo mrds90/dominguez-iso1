@@ -6,7 +6,7 @@
 
 #define MAX_NUMBER_TASK         9U                                  // Defines maximum task we could create.
 #define MAX_STACK_SIZE          256U                                // Defines maximum stack size for a task.
-#define MAX_TASK_SIZE          (MAX_STACK_SIZE/sizeof(uint32_t))    // Defines maximum stack size for a task.
+#define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))    // Defines maximum stack size for a task.
 #define SYSTICK_PERIOD_MS       1U                                  // Systick period time in mili-second.
 #define SIZE_STACK_FRAME        17U                                 // Size stack frame
 #define STACK_POS(x)            (MAX_TASK_SIZE - x)
@@ -40,11 +40,11 @@ typedef enum {
 } osTaskStatusType;
 
 typedef struct {
-    uint32_t memory[MAX_TASK_SIZE];            // Memory stack
-    uint32_t stackPointer;                          // Stack pointer of task
-    void *entryPoint;                               // Callback executed on task
-    uint8_t id;                                     // Task ID, it is a number started in 0
-    osTaskStatusType status;                        // Status task.
+    uint32_t memory[MAX_TASK_SIZE];           // Memory stack
+    uint32_t stackPointer;                    // Stack pointer of task
+    void *entryPoint;                         // Callback executed on task
+    uintptr_t id;                             // Task ID, it's a memory position
+    osTaskStatusType status;                  // Status task.
 } osTaskObject;
 
 typedef uint64_t tick_tipe_t;

@@ -6,17 +6,16 @@
 #include "cmsis_gcc.h"
 /* ==================== Define private variables ==================== */
 #define FIRST_INDEX_TASK_PRIORITY     0U
+#define IDLE_TASK_INDEX               0U
 
 typedef struct {
     osTaskObject *listTask[MAX_NUMBER_TASK];                                // Task list.
     osTaskObject *currentTask;                                              // Current handler task running.
-    osTaskObject *nextTask;                                                 // Next handler task will be run.
-    uint8_t countTask;                                                      // Number of task created.
+    osTaskObject **nextTask;                                                // Next handler task will be run.
 } osKernelObject;
 
 /* ================== Private variables declaration ================= */
-static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
-                                   .countTask = 1};
+static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL};
 static tick_tipe_t sys_tick = 0;
 
 /* ================== Private functions declaration ================= */
@@ -31,7 +30,14 @@ static void IdleTask(void);
 
 bool osTaskCreate(osTaskObject *handler, void *callback) {
     bool ret = false;
-    if (os_kernel.countTask < MAX_NUMBER_TASK) {
+    uint8_t i;
+    for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
+        if (os_kernel.listTask[i] == NULL) {
+            handler->id = (uintptr_t)&os_kernel.listTask[i]; //save the mem position of the element in the list task as ID
+            break;
+        }
+    }
+    if (i < MAX_NUMBER_TASK) { // check if there was memory available
         ret = true;
         // xPSR value with 24 bit on one (Thumb mode).
         handler->memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
@@ -46,17 +52,11 @@ bool osTaskCreate(osTaskObject *handler, void *callback) {
 
         // Pointer function of task.
         handler->entryPoint     = callback;
-        handler->id             = os_kernel.countTask;
         handler->stackPointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
 
         // Fill controls OS structure
-        os_kernel.listTask[os_kernel.countTask] = handler;
-        os_kernel.countTask++;
-
-        // Ask to avoid overflow memory when fill element vector
-        if (os_kernel.countTask < MAX_NUMBER_TASK) {
-            os_kernel.listTask[os_kernel.countTask] = NULL;
-        }
+        osTaskObject **temp = (osTaskObject **)handler->id;
+        *temp = (handler); //save the handler in the os_kernel.listTask[i].
     }
 
     return ret;
@@ -69,17 +69,17 @@ void osStart(void) {
     static osTaskObject idle_task;
 
     // Create idle_task
-    idle_task.memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
-    idle_task.memory[STACK_POS(PC_REG_POSTION)]      = (uint32_t)IdleTask;
-    idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)] = EXEC_RETURN_VALUE;
+    idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
+    idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)IdleTask;
+    idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
+    idle_task.entryPoint                                = IdleTask;
+    idle_task.id                                        = (uintptr_t) &os_kernel.listTask[IDLE_TASK_INDEX];
+    idle_task.stackPointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+    os_kernel.listTask[IDLE_TASK_INDEX]                 = &idle_task;
 
-    idle_task.entryPoint     = IdleTask;
-    idle_task.id             = 0;
-    idle_task.stackPointer   = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
-    os_kernel.listTask[0]    = &idle_task;
-
-    os_kernel.nextTask = NULL;
-    os_kernel.currentTask = os_kernel.listTask[0];
+    // Start in Idle Task
+    os_kernel.nextTask = (osTaskObject **)idle_task.id;
+    os_kernel.currentTask = *os_kernel.nextTask;
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -114,7 +114,7 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
     os_kernel.currentTask->status        = OS_TASK_READY;
 
     // Switch address memory points on current task for next task and change state of task
-    os_kernel.currentTask            = os_kernel.nextTask;
+    os_kernel.currentTask            = *os_kernel.nextTask;
     os_kernel.currentTask->status    = OS_TASK_RUNNING;
 
     return os_kernel.currentTask->stackPointer;
@@ -127,17 +127,14 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  */
 static void scheduler(void) {
     uint8_t index = 0;
-    static osTaskObject **next_task = &os_kernel.listTask[0];
 
-    os_kernel.nextTask = os_kernel.listTask[0];
-    while ((++next_task) < &os_kernel.listTask[MAX_NUMBER_TASK]) {
-        if ((*next_task) != NULL) {
-            os_kernel.nextTask = *next_task;
+    while ((++os_kernel.nextTask) < &os_kernel.listTask[MAX_NUMBER_TASK]) { //find next task created
+        if ((*os_kernel.nextTask) != NULL) { //task created check
             break;
         }
     }
-    if((next_task) >= &os_kernel.listTask[MAX_NUMBER_TASK]) {
-    	next_task = &os_kernel.listTask[0];
+    if ((os_kernel.nextTask) >= &os_kernel.listTask[MAX_NUMBER_TASK]) { //if all task were checked, run idle task
+        os_kernel.nextTask = &os_kernel.listTask[IDLE_TASK_INDEX];
     }
 }
 

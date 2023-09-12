@@ -80,7 +80,6 @@ void osStart(void) {
 
     os_kernel.nextTask = NULL;
     os_kernel.currentTask = os_kernel.listTask[0];
-
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -128,18 +127,18 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  */
 static void scheduler(void) {
     uint8_t index = 0;
+    static osTaskObject **next_task = &os_kernel.listTask[0];
 
-    // Is the first time that operating system execute? Yes, so I start with Task1
-
-    // find next task crated in the task list.
-    for (uint8_t i = (os_kernel.currentTask->id + 1); i < MAX_NUMBER_TASK; i++) {
-        if (os_kernel.listTask[i] != NULL) {
-            index = i;
+    os_kernel.nextTask = os_kernel.listTask[0];
+    while ((++next_task) < &os_kernel.listTask[MAX_NUMBER_TASK]) {
+        if ((*next_task) != NULL) {
+            os_kernel.nextTask = *next_task;
             break;
         }
     }
-
-    os_kernel.nextTask = os_kernel.listTask[index];
+    if((next_task) >= &os_kernel.listTask[MAX_NUMBER_TASK]) {
+    	next_task = &os_kernel.listTask[0];
+    }
 }
 
 static void IdleTask(void) {

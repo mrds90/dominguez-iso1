@@ -7,7 +7,7 @@
 /*=====[Inclusions of function dependencies]=================================*/
 
 #include "dominguez-iso1.h"
-#include "osKernel.h"
+#include "OS/osKernel.h"
 #include "cmsis_gcc.h"
 #include "sapi.h"
 /*=====[Definition macros of private constants]==============================*/

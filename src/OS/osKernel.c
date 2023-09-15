@@ -7,28 +7,97 @@
 /* ==================== Define private variables ==================== */
 #define FIRST_INDEX_TASK_PRIORITY     0U
 #define IDLE_TASK_INDEX               0U
+#define PRIORITY_LEVELS               2U
+#define TASK_IDLE_PRIORITY            0U
 
+/**
+ * @brief Hold the pointers of the fifos for each priority
+ * 
+ */
 typedef struct {
-    osTaskObject *listTask[MAX_NUMBER_TASK];                                // Task list.
-    osTaskObject *currentTask;                                              // Current handler task running.
-    osTaskObject **nextTask;                                                // Next handler task will be run.
+    osTaskObject **pop_ptr;
+    osTaskObject **push_ptr;
+} fifo_task_t;
+
+/**
+ * @brief Hold the information of the kernel
+ * 
+ */
+typedef struct {
+    osTaskObject *listTask[MAX_NUMBER_TASK];                                ///< Task list.
+    osTaskObject *currentTask;                                              ///< Current handler task running.
+    osTaskObject **nextTask;                                                ///< Next handler task will be run.
+    fifo_task_t fifo[PRIORITY_LEVELS];                                      ///< Pointer to fifos with task by priority
+    tick_tipe_t sys_tick;                                                   ///< Tick count of the system
+
 } osKernelObject;
 
+
 /* ================== Private variables declaration ================= */
-static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL};
-static tick_tipe_t sys_tick = 0;
+
+static osTaskObject *fifo_task[PRIORITY_LEVELS][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
+static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
+                                   .currentTask = NULL,
+                                   .sys_tick = 0,
+                                   .fifo = {
+                                       [0] = {
+                                           .pop_ptr = &fifo_task[0][0],
+                                           .push_ptr = &fifo_task[0][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 1)
+                                       [1] = {
+                                           .pop_ptr = &fifo_task[1][0],
+                                           .push_ptr = &fifo_task[1][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 2)
+                                       [1] = {
+                                           .pop_ptr = &fifo_task[2][0],
+                                           .push_ptr = &fifo_task[2][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 3)
+                                       [1] = {
+                                           .pop_ptr = &fifo_task[3][0],
+                                           .push_ptr = &fifo_task[3][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 4)
+                                       [1] = {
+                                           .pop_ptr = &fifo_task[4][0],
+                                           .push_ptr = &fifo_task[4][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 5)
+                                       [1] = {
+                                           .pop_ptr = &fifo_task[5][0],
+                                           .push_ptr = &fifo_task[5][0],
+                                       },
+                                    #if (PRIORITY_LEVELS > 6)
+                                        #error "Invlid priority level"
+                                    #endif /* (PRIORITY_LEVELS > 6) */
+                                    #endif /* (PRIORITY_LEVELS > 5) */
+                                    #endif /* (PRIORITY_LEVELS > 4) */
+                                    #endif /* (PRIORITY_LEVELS > 3) */
+                                    #endif /* (PRIORITY_LEVELS > 2) */
+                                    #endif /* (PRIORITY_LEVELS > 1) */
+                                   }};
 
 /* ================== Private functions declaration ================= */
 
+/**
+ * @brief Save the stack pointer of the current task and load the msp with the stack pointer of the next task.
+ * 
+ * @param current_stask_pointer 
+ * @return uint32_t 
+ */
 static uint32_t ChangeOfContext(uint32_t current_stask_pointer);
 
+/**
+ * @brief Choose the next task to be running
+ * 
+ */
 static void scheduler(void);
-
-static void IdleTask(void);
 
 /* ================= Public functions implementation ================ */
 
-bool osTaskCreate(osTaskObject *handler, void *callback) {
+bool osTaskCreate(osTaskObject *handler, void *callback, uint8_t priority) {
     bool ret = false;
     uint8_t i;
     for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
@@ -53,10 +122,18 @@ bool osTaskCreate(osTaskObject *handler, void *callback) {
         // Pointer function of task.
         handler->entryPoint     = callback;
         handler->stackPointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+        handler->status         = OS_TASK_READY;
+        handler->priority       = priority;
+
 
         // Fill controls OS structure
         osTaskObject **temp = (osTaskObject **)handler->id;
         *temp = (handler); //save the handler in the os_kernel.listTask[i].
+        *os_kernel.fifo[handler->priority].push_ptr = handler;
+        os_kernel.fifo[handler->priority].push_ptr++;
+        if (os_kernel.fifo[handler->priority].push_ptr == &fifo_task[handler->priority][MAX_NUMBER_TASK]) {
+            os_kernel.fifo[handler->priority].push_ptr = &fifo_task[handler->priority][0];
+        }
     }
 
     return ret;
@@ -70,16 +147,25 @@ void osStart(void) {
 
     // Create idle_task
     idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
-    idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)IdleTask;
+    idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)osIdleTask;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
-    idle_task.entryPoint                                = IdleTask;
+    idle_task.entryPoint                                = osIdleTask;
     idle_task.id                                        = (uintptr_t) &os_kernel.listTask[IDLE_TASK_INDEX];
+    idle_task.status                                    = OS_TASK_READY;
+    idle_task.priority                                  = TASK_IDLE_PRIORITY;
     idle_task.stackPointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
     os_kernel.listTask[IDLE_TASK_INDEX]                 = &idle_task;
+    os_kernel.listTask[IDLE_TASK_INDEX]                 = &idle_task;
+
 
     // Start in Idle Task
     os_kernel.nextTask = (osTaskObject **)idle_task.id;
-    os_kernel.currentTask = *os_kernel.nextTask;
+
+    *os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr = *os_kernel.nextTask;;
+    os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr++;
+    if (os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr == &fifo_task[TASK_IDLE_PRIORITY][MAX_NUMBER_TASK]) {
+        os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr = &fifo_task[TASK_IDLE_PRIORITY][0];
+    }
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -96,7 +182,13 @@ void osStart(void) {
 }
 
 tick_tipe_t osGetTickCount(void) {
-    return sys_tick;
+    return os_kernel.sys_tick;
+}
+
+void osIdleTask(void) {
+    while (1) {
+        __WFI();
+    }
 }
 
 /* ================ Private functions implementation ================ */
@@ -110,8 +202,9 @@ tick_tipe_t osGetTickCount(void) {
  */
 static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
     // Storage last stack pointer used on current task and change state to ready.
-    os_kernel.currentTask->stackPointer  = current_stask_pointer;
-    os_kernel.currentTask->status        = OS_TASK_READY;
+    if (os_kernel.currentTask != NULL) {
+        os_kernel.currentTask->stackPointer  = current_stask_pointer;
+    }
 
     // Switch address memory points on current task for next task and change state of task
     os_kernel.currentTask            = *os_kernel.nextTask;
@@ -126,26 +219,34 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  * @return Returns true if a new task to be executed.
  */
 static void scheduler(void) {
-    uint8_t index = 0;
-
-    while ((++os_kernel.nextTask) < &os_kernel.listTask[MAX_NUMBER_TASK]) { //find next task created
-        if ((*os_kernel.nextTask) != NULL) { //task created check
+    for (uint8_t i = (PRIORITY_LEVELS - 1); i < PRIORITY_LEVELS; i--) {
+        if (os_kernel.fifo[i].pop_ptr != os_kernel.fifo[i].push_ptr) {
+            os_kernel.nextTask = os_kernel.fifo[i].pop_ptr++;
+            if (os_kernel.fifo[i].pop_ptr == &fifo_task[i][MAX_NUMBER_TASK]) {
+                os_kernel.fifo[i].pop_ptr = &fifo_task[i][0];
+            }
             break;
         }
     }
-    if ((os_kernel.nextTask) >= &os_kernel.listTask[MAX_NUMBER_TASK]) { //if all task were checked, run idle task
-        os_kernel.nextTask = &os_kernel.listTask[IDLE_TASK_INDEX];
+    if (os_kernel.currentTask != NULL) {
+        if (os_kernel.currentTask != *os_kernel.nextTask) {
+            if (os_kernel.currentTask->status == OS_TASK_RUNNING) {
+                os_kernel.currentTask->status = OS_TASK_READY;
+                *os_kernel.fifo[os_kernel.currentTask->priority].push_ptr = os_kernel.currentTask;
+                os_kernel.fifo[os_kernel.currentTask->priority].push_ptr++;
+                if (os_kernel.fifo[os_kernel.currentTask->priority].push_ptr == &fifo_task[os_kernel.currentTask->priority][MAX_NUMBER_TASK]) {
+                    os_kernel.fifo[os_kernel.currentTask->priority].push_ptr = &fifo_task[os_kernel.currentTask->priority][0];
+                }
+            }
+        }
     }
 }
 
-static void IdleTask(void) {
-    while (1) {}
-}
 
 /* ========== Processor Interruption and Exception Handlers ========= */
 
 void SysTick_Handler(void) {
-    sys_tick++;
+    os_kernel.sys_tick++;
     scheduler();
 
     /*
@@ -184,7 +285,7 @@ __attribute__ ((naked)) void PendSV_Handler(void) {
     __ASM volatile ("mrs r0, msp");
     __ASM volatile ("bl %0" :: "i" (ChangeOfContext));
     __ASM volatile ("msr msp, r0");
-    __ASM volatile ("pop {r4-r11, lr}");    //Recuperados todos los valores de registros
+    __ASM volatile ("pop {r4-r11, lr}");     //Recuperados todos los valores de registros
 
     /* Se hace un branch indirect con el valor de LR que es nuevamente EXEC_RETURN */
     __ASM volatile ("bx lr");

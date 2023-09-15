@@ -45,6 +45,7 @@ typedef struct {
     void *entryPoint;                         // Callback executed on task
     uintptr_t id;                             // Task ID, it's a memory position
     osTaskStatusType status;                  // Status task.
+    uint8_t priority;
 } osTaskObject;
 
 typedef uint64_t tick_tipe_t;
@@ -57,7 +58,7 @@ typedef uint64_t tick_tipe_t;
  *
  * @return Return true if task was success or false in otherwise.
  */
-bool osTaskCreate(osTaskObject *handler, void *callback);
+bool osTaskCreate(osTaskObject *handler, void *callback, uint8_t priority);
 
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
@@ -65,5 +66,8 @@ bool osTaskCreate(osTaskObject *handler, void *callback);
 void osStart(void);
 
 tick_tipe_t osGetTickCount(void);
+
+__attribute__((weak)) void osIdleTask(void);
+
 
 #endif // INC_OSKERNEL_H_

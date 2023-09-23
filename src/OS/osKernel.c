@@ -7,12 +7,20 @@
 /* ==================== Define private variables ==================== */
 #define FIRST_INDEX_TASK_PRIORITY     0U
 #define IDLE_TASK_INDEX               0U
-#define PRIORITY_LEVELS               2U
 #define TASK_IDLE_PRIORITY            0U
 
 /**
+ * @brief Struct that link task with the time to wake up
+ *
+ */
+typedef struct {
+    osTaskObject *blocked_task;
+    tick_tipe_t time_to_wake_up;
+} delay_t;
+
+/**
  * @brief Hold the pointers of the fifos for each priority
- * 
+ *
  */
 typedef struct {
     osTaskObject **pop_ptr;
@@ -21,58 +29,46 @@ typedef struct {
 
 /**
  * @brief Hold the information of the kernel
- * 
+ *
  */
 typedef struct {
     osTaskObject *listTask[MAX_NUMBER_TASK];                                ///< Task list.
     osTaskObject *currentTask;                                              ///< Current handler task running.
     osTaskObject **nextTask;                                                ///< Next handler task will be run.
-    fifo_task_t fifo[PRIORITY_LEVELS];                                      ///< Pointer to fifos with task by priority
+    fifo_task_t task_fifo[OS_PRIORITY_QTY];                                      ///< Pointer to fifos with task by priority
     tick_tipe_t sys_tick;                                                   ///< Tick count of the system
-
 } osKernelObject;
 
 
 /* ================== Private variables declaration ================= */
+static delay_t delay_list[MAX_NUMBER_TASK] = {[0 ... MAX_NUMBER_TASK - 1] = {.blocked_task = NULL}};
 
-static osTaskObject *fifo_task[PRIORITY_LEVELS][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
+static osTaskObject *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
 static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                    .currentTask = NULL,
                                    .sys_tick = 0,
-                                   .fifo = {
-                                       [0] = {
-                                           .pop_ptr = &fifo_task[0][0],
-                                           .push_ptr = &fifo_task[0][0],
+                                   .task_fifo = {
+                                       [OS_LOW_PRIORITY] = {
+                                           .pop_ptr = fifo_task[OS_LOW_PRIORITY],
+                                           .push_ptr = fifo_task[OS_LOW_PRIORITY],
                                        },
                                     #if (PRIORITY_LEVELS > 1)
-                                       [1] = {
-                                           .pop_ptr = &fifo_task[1][0],
-                                           .push_ptr = &fifo_task[1][0],
+                                       [OS_NORMAL_PRIORITY] = {
+                                           .pop_ptr = fifo_task[OS_NORMAL_PRIORITY],
+                                           .push_ptr = fifo_task[OS_NORMAL_PRIORITY],
                                        },
                                     #if (PRIORITY_LEVELS > 2)
-                                       [1] = {
-                                           .pop_ptr = &fifo_task[2][0],
-                                           .push_ptr = &fifo_task[2][0],
+                                       [OS_HIGH_PRIORITY] = {
+                                           .pop_ptr = fifo_task[OS_HIGH_PRIORITY],
+                                           .push_ptr = fifo_task[OS_HIGH_PRIORITY],
                                        },
                                     #if (PRIORITY_LEVELS > 3)
-                                       [1] = {
-                                           .pop_ptr = &fifo_task[3][0],
-                                           .push_ptr = &fifo_task[3][0],
+                                       [OS_VERYHIGH_PRIORITY] = {
+                                           .pop_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
+                                           .push_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
                                        },
                                     #if (PRIORITY_LEVELS > 4)
-                                       [1] = {
-                                           .pop_ptr = &fifo_task[4][0],
-                                           .push_ptr = &fifo_task[4][0],
-                                       },
-                                    #if (PRIORITY_LEVELS > 5)
-                                       [1] = {
-                                           .pop_ptr = &fifo_task[5][0],
-                                           .push_ptr = &fifo_task[5][0],
-                                       },
-                                    #if (PRIORITY_LEVELS > 6)
                                         #error "Invlid priority level"
-                                    #endif /* (PRIORITY_LEVELS > 6) */
-                                    #endif /* (PRIORITY_LEVELS > 5) */
                                     #endif /* (PRIORITY_LEVELS > 4) */
                                     #endif /* (PRIORITY_LEVELS > 3) */
                                     #endif /* (PRIORITY_LEVELS > 2) */
@@ -83,21 +79,22 @@ static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL
 
 /**
  * @brief Save the stack pointer of the current task and load the msp with the stack pointer of the next task.
- * 
- * @param current_stask_pointer 
- * @return uint32_t 
+ *
+ * @param current_stask_pointer
+ * @return uint32_t
  */
 static uint32_t ChangeOfContext(uint32_t current_stask_pointer);
 
 /**
  * @brief Choose the next task to be running
- * 
+ *
  */
 static void scheduler(void);
 
-/* ================= Public functions implementation ================ */
+__STATIC_FORCEINLINE void PushTaskToReadyList(osTaskObject *task);
 
-bool osTaskCreate(osTaskObject *handler, void *callback, uint8_t priority) {
+/* ================= Public functions implementation ================ */
+bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback) {
     bool ret = false;
     uint8_t i;
     for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
@@ -129,11 +126,7 @@ bool osTaskCreate(osTaskObject *handler, void *callback, uint8_t priority) {
         // Fill controls OS structure
         osTaskObject **temp = (osTaskObject **)handler->id;
         *temp = (handler); //save the handler in the os_kernel.listTask[i].
-        *os_kernel.fifo[handler->priority].push_ptr = handler;
-        os_kernel.fifo[handler->priority].push_ptr++;
-        if (os_kernel.fifo[handler->priority].push_ptr == &fifo_task[handler->priority][MAX_NUMBER_TASK]) {
-            os_kernel.fifo[handler->priority].push_ptr = &fifo_task[handler->priority][0];
-        }
+        PushTaskToReadyList(handler);
     }
 
     return ret;
@@ -160,12 +153,7 @@ void osStart(void) {
 
     // Start in Idle Task
     os_kernel.nextTask = (osTaskObject **)idle_task.id;
-
-    *os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr = *os_kernel.nextTask;;
-    os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr++;
-    if (os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr == &fifo_task[TASK_IDLE_PRIORITY][MAX_NUMBER_TASK]) {
-        os_kernel.fifo[TASK_IDLE_PRIORITY].push_ptr = &fifo_task[TASK_IDLE_PRIORITY][0];
-    }
+    PushTaskToReadyList(*os_kernel.nextTask);
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -185,7 +173,53 @@ tick_tipe_t osGetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
-void osIdleTask(void) {
+void osDelay(const uint32_t tick) {
+    NVIC_DisableIRQ(SysTick_IRQn);
+    for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
+        if (delay_list[i].blocked_task == NULL) {
+            delay_list[i].time_to_wake_up = os_kernel.sys_tick + tick;
+            delay_list[i].blocked_task = os_kernel.currentTask;
+            delay_list[i].blocked_task->status = OS_TASK_BLOCK;
+            break;
+        }
+    }
+
+    scheduler();
+    /*
+     * Set up bit corresponding exception PendSV
+     */
+    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+
+    /*
+     * Instruction Synchronization Barrier; flushes the pipeline and ensures that
+     * all previous instructions are completed before executing new instructions
+     */
+    __ISB();
+
+    /*
+     * Data Synchronization Barrier; ensures that all memory accesses are
+     * completed before next instruction is executed
+     */
+    __DSB();
+    NVIC_EnableIRQ(SysTick_IRQn);
+
+}
+
+__attribute__((weak)) void osReturnTaskHook(void) {
+    while (1) {
+        __WFI();
+    }
+}
+
+__attribute__((weak)) void osSysTickHook(void) {
+    __ASM volatile ("nop");
+}
+
+__attribute__((weak)) void osErrorHook(void *caller) {
+    while (1) {}
+}
+
+__attribute__((weak)) void osIdleTask(void) {
     while (1) {
         __WFI();
     }
@@ -219,11 +253,20 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  * @return Returns true if a new task to be executed.
  */
 static void scheduler(void) {
+    for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
+        if (delay_list[i].blocked_task != NULL) {
+            if (delay_list[i].time_to_wake_up <= os_kernel.sys_tick) {
+                delay_list[i].blocked_task->status = OS_TASK_READY;
+                PushTaskToReadyList(delay_list[i].blocked_task);
+                delay_list[i].blocked_task = NULL;
+            }
+        }
+    }
     for (uint8_t i = (PRIORITY_LEVELS - 1); i < PRIORITY_LEVELS; i--) {
-        if (os_kernel.fifo[i].pop_ptr != os_kernel.fifo[i].push_ptr) {
-            os_kernel.nextTask = os_kernel.fifo[i].pop_ptr++;
-            if (os_kernel.fifo[i].pop_ptr == &fifo_task[i][MAX_NUMBER_TASK]) {
-                os_kernel.fifo[i].pop_ptr = &fifo_task[i][0];
+        if (os_kernel.task_fifo[i].pop_ptr != os_kernel.task_fifo[i].push_ptr) {
+            os_kernel.nextTask = os_kernel.task_fifo[i].pop_ptr++;
+            if (os_kernel.task_fifo[i].pop_ptr == &fifo_task[i][MAX_NUMBER_TASK]) {
+                os_kernel.task_fifo[i].pop_ptr = &fifo_task[i][0];
             }
             break;
         }
@@ -232,16 +275,19 @@ static void scheduler(void) {
         if (os_kernel.currentTask != *os_kernel.nextTask) {
             if (os_kernel.currentTask->status == OS_TASK_RUNNING) {
                 os_kernel.currentTask->status = OS_TASK_READY;
-                *os_kernel.fifo[os_kernel.currentTask->priority].push_ptr = os_kernel.currentTask;
-                os_kernel.fifo[os_kernel.currentTask->priority].push_ptr++;
-                if (os_kernel.fifo[os_kernel.currentTask->priority].push_ptr == &fifo_task[os_kernel.currentTask->priority][MAX_NUMBER_TASK]) {
-                    os_kernel.fifo[os_kernel.currentTask->priority].push_ptr = &fifo_task[os_kernel.currentTask->priority][0];
-                }
+                PushTaskToReadyList(os_kernel.currentTask);
             }
         }
     }
 }
 
+__STATIC_FORCEINLINE void PushTaskToReadyList(osTaskObject *task) {
+    *os_kernel.task_fifo[task->priority].push_ptr = task;
+    os_kernel.task_fifo[task->priority].push_ptr++;
+    if (os_kernel.task_fifo[task->priority].push_ptr == &fifo_task[task->priority][MAX_NUMBER_TASK]) {
+        os_kernel.task_fifo[task->priority].push_ptr = &fifo_task[task->priority][0];
+    }
+}
 
 /* ========== Processor Interruption and Exception Handlers ========= */
 
@@ -268,25 +314,19 @@ void SysTick_Handler(void) {
 }
 
 __attribute__ ((naked)) void PendSV_Handler(void) {
-    /**
-     * Cuando se ingresa al handler de PendSV lo primero que se ejecuta es un push para
-     * guardar los registros R4-R11 y el valor de LR, que en este punto es EXEC_RETURN
-     * El push se hace al reves de como se escribe en la instruccion, por lo que LR
-     * se guarda en la posicion 9 (luego del stack frame). Como la funcion ChangeOfContext
-     * se llama con un branch con link, el valor del LR es modificado guardando la direccion
-     * de retorno una vez se complete la ejecucion de la funcion
-     * El pasaje de argumentos a getContextoSiguiente se hace como especifica el AAPCS siendo
-     * el unico argumento pasado por RO, y el valor de retorno tambien se almacena en R0
-     *
-     * NOTA: El primer ingreso a este handler (luego del reset) implica que el push se hace sobre el
-     * stack inicial, ese stack se pierde porque no hay seguimiento del MSP en el primer ingreso
-     */
+    __ASM volatile ("tst lr, 0x10");
+    __ASM volatile ("it eq");
+    __ASM volatile ("vpusheq {s16-s31}");
+
     __ASM volatile ("push {r4-r11, lr}");
     __ASM volatile ("mrs r0, msp");
     __ASM volatile ("bl %0" :: "i" (ChangeOfContext));
     __ASM volatile ("msr msp, r0");
     __ASM volatile ("pop {r4-r11, lr}");     //Recuperados todos los valores de registros
 
+    __ASM volatile ("tst lr,0x10");
+    __ASM volatile ("it eq");
+    __ASM volatile ("vpopeq {s16-s31}");
     /* Se hace un branch indirect con el valor de LR que es nuevamente EXEC_RETURN */
     __ASM volatile ("bx lr");
 }

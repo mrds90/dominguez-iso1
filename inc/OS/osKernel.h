@@ -10,6 +10,7 @@
 #define SYSTICK_PERIOD_MS       1U                                  // Systick period time in mili-second.
 #define SIZE_STACK_FRAME        17U                                 // Size stack frame
 #define STACK_POS(x)            (MAX_TASK_SIZE - x)
+#define PRIORITY_LEVELS         4U
 
 #define XPSR_VALUE              1 << 24     // xPSR.T = 1
 #define EXEC_RETURN_VALUE       0xFFFFFFF9  // EXEC_RETURN value. Return to thread mode with MSP, not use FPU
@@ -39,26 +40,47 @@ typedef enum {
     OS_TASK_SUSPEND     // Suspended state
 } osTaskStatusType;
 
+typedef enum
+{
+    OS_LOW_PRIORITY,
+    #if (PRIORITY_LEVELS > 1)
+    OS_NORMAL_PRIORITY,
+    #if (PRIORITY_LEVELS > 2)
+    OS_HIGH_PRIORITY,
+    #if (PRIORITY_LEVELS > 3)
+    OS_VERYHIGH_PRIORITY,
+    #if (PRIORITY_LEVELS > 4)
+        #error "Invlid priority level"
+    #endif /* (PRIORITY_LEVELS > 4) */
+    #endif /* (PRIORITY_LEVELS > 3) */
+    #endif /* (PRIORITY_LEVELS > 2) */
+    #endif /* (PRIORITY_LEVELS > 1) */
+
+    OS_PRIORITY_QTY,
+} osPriorityType;
+
 typedef struct {
     uint32_t memory[MAX_TASK_SIZE];           // Memory stack
     uint32_t stackPointer;                    // Stack pointer of task
     void *entryPoint;                         // Callback executed on task
     uintptr_t id;                             // Task ID, it's a memory position
     osTaskStatusType status;                  // Status task.
-    uint8_t priority;
+    osPriorityType priority;                  // Task priority.
 } osTaskObject;
 
 typedef uint64_t tick_tipe_t;
 
 /**
- * @brief Create task.
- *
- * @param[in,out]   handler     Data structure of task.
- * @param[in]       callback    Function executed on task
- *
- * @return Return true if task was success or false in otherwise.
- */
-bool osTaskCreate(osTaskObject *handler, void *callback, uint8_t priority);
+*@brief Create task.
+*
+*@param[in, out]   handler Data structure of task.
+*@param[in]       priority Task priority level.
+*@param[in]       callback Function executed on task
+*
+*@return Return true if task was success or false in otherwise.
+*/
+
+bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback);
 
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
@@ -67,7 +89,41 @@ void osStart(void);
 
 tick_tipe_t osGetTickCount(void);
 
-__attribute__((weak)) void osIdleTask(void);
+/**
+ * @brief Execute a delay for the current task.
+ *
+ * @param[in]   tick Number ticks delayed.
+ */
+void osDelay(const uint32_t tick);
+
+/**
+ * @brief Function used as default when some task return for a problem.
+ */
+void osReturnTaskHook(void);
+
+/**
+ * @brief Function used if user would like to do something on systick hander interrupt.
+ * It has a default implementation that do anything.
+ *
+ * @warning The function used to perform operations on each Systick in the system. It
+ * be as short as possible because it is called in the Systick interrupt handler.
+ *
+ * @warning The function shouldn't call an OS API in any case because a new scheduler
+ * could occur.
+ */
+void osSysTickHook(void);
+
+/**
+ * @brief Function used when happen error on OS
+ *
+ * @param[in]   caller  Function pointer where error happened.
+ */
+void osErrorHook(void *caller);
+
+/**
+ * @brief Idle task of the operation system.
+ */
+void osIdleTask(void);
 
 
 #endif // INC_OSKERNEL_H_

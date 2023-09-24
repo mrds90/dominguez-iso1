@@ -3,12 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#define MAX_NUMBER_TASK         9U                                  // Defines maximum task we could create.
-#define MAX_STACK_SIZE          256U                                // Defines maximum stack size for a task.
-#define PRIORITY_LEVELS         4U
+#include "OS/osConfig.h"
 #define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
-#define SYSTICK_PERIOD_MS       1U                                  // Systick period time in mili-second.
 #define SIZE_STACK_FRAME        17U                                 // Size stack frame
 #define STACK_POS(x)            (MAX_TASK_SIZE - x)
 

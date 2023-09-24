@@ -1,22 +1,13 @@
 #include <stddef.h>
 
-#include "cmsis.h"
-#include "chip.h"
+
+#include "OS/osArchHeaders.h"
 #include "OS/osKernel.h"
-#include "cmsis_gcc.h"
+#include "OS/delay.h"
 /* ==================== Define private variables ==================== */
 #define FIRST_INDEX_TASK_PRIORITY     0U
 #define IDLE_TASK_INDEX               0U
 #define TASK_IDLE_PRIORITY            0U
-
-/**
- * @brief Struct that link task with the time to wake up
- *
- */
-typedef struct {
-    osTaskObject *blocked_task;
-    tick_tipe_t time_to_wake_up;
-} delay_t;
 
 /**
  * @brief Hold the pointers of the fifos for each priority
@@ -35,13 +26,12 @@ typedef struct {
     osTaskObject *listTask[MAX_NUMBER_TASK];                                ///< Task list.
     osTaskObject *currentTask;                                              ///< Current handler task running.
     osTaskObject **nextTask;                                                ///< Next handler task will be run.
-    fifo_task_t task_fifo[OS_PRIORITY_QTY];                                      ///< Pointer to fifos with task by priority
-    tick_tipe_t sys_tick;                                                   ///< Tick count of the system
+    fifo_task_t task_fifo[OS_PRIORITY_QTY];                                 ///< Pointer to fifos with task by priority
+    tick_type_t sys_tick;                                                   ///< Tick count of the system
 } osKernelObject;
 
 
 /* ================== Private variables declaration ================= */
-static delay_t delay_list[MAX_NUMBER_TASK] = {[0 ... MAX_NUMBER_TASK - 1] = {.blocked_task = NULL}};
 
 static osTaskObject *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
 static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
@@ -91,7 +81,7 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer);
  */
 static void scheduler(void);
 
-__STATIC_FORCEINLINE void PushTaskToReadyList(osTaskObject *task);
+__STATIC_FORCEINLINE void PushTaskToWaitingList(osTaskObject *task);
 
 /* ================= Public functions implementation ================ */
 bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback) {
@@ -126,7 +116,7 @@ bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback
         // Fill controls OS structure
         osTaskObject **temp = (osTaskObject **)handler->id;
         *temp = (handler); //save the handler in the os_kernel.listTask[i].
-        PushTaskToReadyList(handler);
+        PushTaskToWaitingList(handler);
     }
 
     return ret;
@@ -153,7 +143,7 @@ void osStart(void) {
 
     // Start in Idle Task
     os_kernel.nextTask = (osTaskObject **)idle_task.id;
-    PushTaskToReadyList(*os_kernel.nextTask);
+    PushTaskToWaitingList(*os_kernel.nextTask);
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -169,20 +159,14 @@ void osStart(void) {
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
-tick_tipe_t osGetTickCount(void) {
+tick_type_t osGetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
 void osDelay(const uint32_t tick) {
     NVIC_DisableIRQ(SysTick_IRQn);
-    for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
-        if (delay_list[i].blocked_task == NULL) {
-            delay_list[i].time_to_wake_up = os_kernel.sys_tick + tick;
-            delay_list[i].blocked_task = os_kernel.currentTask;
-            delay_list[i].blocked_task->status = OS_TASK_BLOCK;
-            break;
-        }
-    }
+
+    DELAY_SetDelay(tick, os_kernel.currentTask);
 
     scheduler();
     /*
@@ -202,7 +186,6 @@ void osDelay(const uint32_t tick) {
      */
     __DSB();
     NVIC_EnableIRQ(SysTick_IRQn);
-
 }
 
 __attribute__((weak)) void osReturnTaskHook(void) {
@@ -254,11 +237,10 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  */
 static void scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
-        if (delay_list[i].blocked_task != NULL) {
-            if (delay_list[i].time_to_wake_up <= os_kernel.sys_tick) {
-                delay_list[i].blocked_task->status = OS_TASK_READY;
-                PushTaskToReadyList(delay_list[i].blocked_task);
-                delay_list[i].blocked_task = NULL;
+        if (os_kernel.listTask[i]->status == OS_TASK_BLOCK) {
+            DELAY_EvalDelay(os_kernel.listTask[i]);
+            if (os_kernel.listTask[i]->status == OS_TASK_READY) {
+                PushTaskToWaitingList(os_kernel.listTask[i]);
             }
         }
     }
@@ -275,13 +257,13 @@ static void scheduler(void) {
         if (os_kernel.currentTask != *os_kernel.nextTask) {
             if (os_kernel.currentTask->status == OS_TASK_RUNNING) {
                 os_kernel.currentTask->status = OS_TASK_READY;
-                PushTaskToReadyList(os_kernel.currentTask);
+                PushTaskToWaitingList(os_kernel.currentTask);
             }
         }
     }
 }
 
-__STATIC_FORCEINLINE void PushTaskToReadyList(osTaskObject *task) {
+__STATIC_FORCEINLINE void PushTaskToWaitingList(osTaskObject *task) {
     *os_kernel.task_fifo[task->priority].push_ptr = task;
     os_kernel.task_fifo[task->priority].push_ptr++;
     if (os_kernel.task_fifo[task->priority].push_ptr == &fifo_task[task->priority][MAX_NUMBER_TASK]) {

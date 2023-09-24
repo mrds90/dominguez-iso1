@@ -43,8 +43,8 @@ int main(void) {
     // Initialize all configured peripherals
     boardConfig();
     osTaskCreate(&osTask1, 1, task1);
-    osTaskCreate(&osTask2, 1, task2);
-    osTaskCreate(&osTask3, 1, task3);
+    osTaskCreate(&osTask2, 2, task2);
+    osTaskCreate(&osTask3, 3, task3);
 
 
     osStart();

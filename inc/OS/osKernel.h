@@ -6,11 +6,11 @@
 
 #define MAX_NUMBER_TASK         9U                                  // Defines maximum task we could create.
 #define MAX_STACK_SIZE          256U                                // Defines maximum stack size for a task.
-#define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))    // Defines maximum stack size for a task.
+#define PRIORITY_LEVELS         4U
+#define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
 #define SYSTICK_PERIOD_MS       1U                                  // Systick period time in mili-second.
 #define SIZE_STACK_FRAME        17U                                 // Size stack frame
 #define STACK_POS(x)            (MAX_TASK_SIZE - x)
-#define PRIORITY_LEVELS         4U
 
 #define XPSR_VALUE              1 << 24     // xPSR.T = 1
 #define EXEC_RETURN_VALUE       0xFFFFFFF9  // EXEC_RETURN value. Return to thread mode with MSP, not use FPU
@@ -33,6 +33,8 @@
 #define R11_REG_POSTION         17U
 
 /* Possible task status */
+typedef uint64_t tick_type_t;
+
 typedef enum {
     OS_TASK_READY,      // Ready state
     OS_TASK_RUNNING,    // Running state
@@ -66,9 +68,9 @@ typedef struct {
     uintptr_t id;                             // Task ID, it's a memory position
     osTaskStatusType status;                  // Status task.
     osPriorityType priority;                  // Task priority.
+    tick_type_t wake_up_time;                 // Time to unblock task if blocked
 } osTaskObject;
 
-typedef uint64_t tick_tipe_t;
 
 /**
 *@brief Create task.
@@ -87,7 +89,7 @@ bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback
  */
 void osStart(void);
 
-tick_tipe_t osGetTickCount(void);
+tick_type_t osGetTickCount(void);
 
 /**
  * @brief Execute a delay for the current task.

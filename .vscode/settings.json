@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "main.h": "c",
-        "oskernel.h": "c"
+        "oskernel.h": "c",
+        "osarchheaders.h": "c",
+        "sapi.h": "c",
+        "stddef.h": "c",
+        "delay.h": "c",
+        "stdbool.h": "c",
+        "cmsis.h": "c"
     }
 }

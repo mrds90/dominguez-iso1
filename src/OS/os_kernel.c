@@ -70,10 +70,10 @@ static osKernelObject os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NUL
 /**
  * @brief Save the stack pointer of the current task and load the msp with the stack pointer of the next task.
  *
- * @param current_stask_pointer
+ * @param current_stack_pointer
  * @return uint32_t
  */
-static uint32_t ChangeOfContext(uint32_t current_stask_pointer);
+static uint32_t ChangeOfContext(uint32_t current_stack_pointer);
 
 /**
  * @brief Choose the next task to be running
@@ -213,14 +213,14 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
 /**
  * @brief Get next context task.
  *
- * @param[in] current_stask_pointer Stack pointer of current task.
+ * @param[in] current_stack_pointer Stack pointer of current task.
  *
  * @return Return stack pointer of new task to execute.
  */
-static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
+static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
     // Storage last stack pointer used on current task and change state to ready.
     if (os_kernel.current_task != NULL) {
-        os_kernel.current_task->stackPointer  = current_stask_pointer;
+        os_kernel.current_task->stackPointer  = current_stack_pointer;
     }
 
     // Switch address memory points on current task for next task and change state of task

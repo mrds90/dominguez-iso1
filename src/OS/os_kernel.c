@@ -23,9 +23,9 @@ typedef struct {
  *
  */
 typedef struct {
-    os_task_t *listTask[MAX_NUMBER_TASK];                                ///< Task list.
-    os_task_t *currentTask;                                              ///< Current handler task running.
-    os_task_t **nextTask;                                                ///< Next handler task will be run.
+    os_task_t *list_task[MAX_NUMBER_TASK];                                ///< Task list.
+    os_task_t *current_task;                                              ///< Current handler task running.
+    os_task_t **next_task;                                                ///< Next handler task will be run.
     fifo_task_t task_fifo[OS_PRIORITY_QTY];                                 ///< Pointer to fifos with task by priority
     tick_type_t sys_tick;                                                   ///< Tick count of the system
 } osKernelObject;
@@ -34,8 +34,8 @@ typedef struct {
 /* ================== Private variables declaration ================= */
 
 static os_task_t *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
-static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
-                                   .currentTask = NULL,
+static osKernelObject os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
+                                   .current_task = NULL,
                                    .sys_tick = 0,
                                    .task_fifo = {
                                        [OS_LOW_PRIORITY] = {
@@ -88,8 +88,8 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
     bool ret = false;
     uint8_t i;
     for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
-        if (os_kernel.listTask[i] == NULL) {
-            handler->id = (uintptr_t)&os_kernel.listTask[i]; //save the mem position of the element in the list task as ID
+        if (os_kernel.list_task[i] == NULL) {
+            handler->id = (uintptr_t)&os_kernel.list_task[i]; //save the mem position of the element in the list task as ID
             break;
         }
     }
@@ -115,7 +115,7 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
 
         // Fill controls OS structure
         os_task_t **temp = (os_task_t **)handler->id;
-        *temp = (handler); //save the handler in the os_kernel.listTask[i].
+        *temp = (handler); //save the handler in the os_kernel.list_task[i].
         PushTaskToWaitingList(handler);
     }
 
@@ -133,17 +133,17 @@ void OS_KERNEL_Start(void) {
     idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)OS_KERNEL_IdleTask;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
     idle_task.entryPoint                                = OS_KERNEL_IdleTask;
-    idle_task.id                                        = (uintptr_t) &os_kernel.listTask[IDLE_TASK_INDEX];
+    idle_task.id                                        = (uintptr_t) &os_kernel.list_task[IDLE_TASK_INDEX];
     idle_task.status                                    = OS_TASK_READY;
     idle_task.priority                                  = TASK_IDLE_PRIORITY;
     idle_task.stackPointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
-    os_kernel.listTask[IDLE_TASK_INDEX]                 = &idle_task;
-    os_kernel.listTask[IDLE_TASK_INDEX]                 = &idle_task;
+    os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
+    os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
 
 
     // Start in Idle Task
-    os_kernel.nextTask = (os_task_t **)idle_task.id;
-    PushTaskToWaitingList(*os_kernel.nextTask);
+    os_kernel.next_task = (os_task_t **)idle_task.id;
+    PushTaskToWaitingList(*os_kernel.next_task);
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
      * condition, we have to less priotity of NVIC. This math calculation showing take lowest
@@ -166,7 +166,7 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
 void OS_KERNEL_Delay(const uint32_t tick) {
     NVIC_DisableIRQ(SysTick_IRQn);
 
-    DELAY_SetDelay(tick, os_kernel.currentTask);
+    DELAY_SetDelay(tick, os_kernel.current_task);
 
     Scheduler();
     /*
@@ -219,15 +219,15 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
  */
 static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
     // Storage last stack pointer used on current task and change state to ready.
-    if (os_kernel.currentTask != NULL) {
-        os_kernel.currentTask->stackPointer  = current_stask_pointer;
+    if (os_kernel.current_task != NULL) {
+        os_kernel.current_task->stackPointer  = current_stask_pointer;
     }
 
     // Switch address memory points on current task for next task and change state of task
-    os_kernel.currentTask            = *os_kernel.nextTask;
-    os_kernel.currentTask->status    = OS_TASK_RUNNING;
+    os_kernel.current_task            = *os_kernel.next_task;
+    os_kernel.current_task->status    = OS_TASK_RUNNING;
 
-    return os_kernel.currentTask->stackPointer;
+    return os_kernel.current_task->stackPointer;
 }
 
 /**
@@ -237,27 +237,27 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  */
 static void Scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
-        if (os_kernel.listTask[i]->status == OS_TASK_BLOCK) {
-            DELAY_EvalDelay(os_kernel.listTask[i]);
-            if (os_kernel.listTask[i]->status == OS_TASK_READY) {
-                PushTaskToWaitingList(os_kernel.listTask[i]);
+        if (os_kernel.list_task[i]->status == OS_TASK_BLOCK) {
+            DELAY_EvalDelay(os_kernel.list_task[i]);
+            if (os_kernel.list_task[i]->status == OS_TASK_READY) {
+                PushTaskToWaitingList(os_kernel.list_task[i]);
             }
         }
     }
     for (uint8_t i = (PRIORITY_LEVELS - 1); i < PRIORITY_LEVELS; i--) {
         if (os_kernel.task_fifo[i].pop_ptr != os_kernel.task_fifo[i].push_ptr) {
-            os_kernel.nextTask = os_kernel.task_fifo[i].pop_ptr++;
+            os_kernel.next_task = os_kernel.task_fifo[i].pop_ptr++;
             if (os_kernel.task_fifo[i].pop_ptr == &fifo_task[i][MAX_NUMBER_TASK]) {
                 os_kernel.task_fifo[i].pop_ptr = &fifo_task[i][0];
             }
             break;
         }
     }
-    if (os_kernel.currentTask != NULL) {
-        if (os_kernel.currentTask != *os_kernel.nextTask) {
-            if (os_kernel.currentTask->status == OS_TASK_RUNNING) {
-                os_kernel.currentTask->status = OS_TASK_READY;
-                PushTaskToWaitingList(os_kernel.currentTask);
+    if (os_kernel.current_task != NULL) {
+        if (os_kernel.current_task != *os_kernel.next_task) {
+            if (os_kernel.current_task->status == OS_TASK_RUNNING) {
+                os_kernel.current_task->status = OS_TASK_READY;
+                PushTaskToWaitingList(os_kernel.current_task);
             }
         }
     }

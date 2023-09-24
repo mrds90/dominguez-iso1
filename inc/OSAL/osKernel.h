@@ -5,27 +5,25 @@
 #include <stdbool.h>
 #include "OS/os_kernel.h"
 
-/* Possible task status */
-typedef tick_type_t TickType;
 
-typedef os_task_status_t osTaskStatusType;
+typedef tick_type_t TickType;               ///< hold tick counts.
 
-typedef os_priority_t osPriorityType;
+typedef os_task_status_t osTaskStatusType;  ///< Status of the OS tasks
 
-typedef os_task_t osTaskObject;
+typedef os_priority_t osPriorityType;       ///< Priority levels
 
+typedef os_task_t osTaskObject;             ///< task Objects that hold information for the kernel
 
 /**
-*@brief Create task.
-*
-*@param[in, out]   handler Data structure of task.
-*@param[in]       priority Task priority level.
-*@param[in]       callback Function executed on task
-*
-*@return Return true if task was success or false in otherwise.
-*/
+ *@brief Create task.
+ *
+ *@param[in, out]   handler Data structure of task.
+ *@param[in]       priority Task priority level.
+ *@param[in]       callback Function executed on task
+ *
+ *@return Return true if task was success or false in otherwise.
+ */
 #define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate(handler, priority, callback)
-
 
 /**
  * @brief Initialization pendSV exception with lowest priority possible.

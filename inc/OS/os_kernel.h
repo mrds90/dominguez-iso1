@@ -70,14 +70,14 @@ typedef struct {
 
 
 /**
-*@brief Create task.
-*
-*@param[in, out]   handler Data structure of task.
-*@param[in]       priority Task priority level.
-*@param[in]       callback Function executed on task
-*
-*@return Return true if task was success or false in otherwise.
-*/
+ *@brief Create task.
+ *
+ *@param[in, out]   handler Data structure of task.
+ *@param[in]        priority Task priority level.
+ *@param[in]        callback Function executed on task
+ *
+ *@return Return true if task was success or false in otherwise.
+ */
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback);
 
 /**

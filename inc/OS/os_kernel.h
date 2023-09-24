@@ -64,7 +64,7 @@ typedef struct {
     void *entryPoint;                         // Callback executed on task
     uintptr_t id;                             // Task ID, it's a memory position
     os_task_status_t status;                  // Status task.
-    os_priority_t priority;                  // Task priority.
+    os_priority_t priority;                   // Task priority.
     tick_type_t wake_up_time;                 // Time to unblock task if blocked
 } os_task_t;
 

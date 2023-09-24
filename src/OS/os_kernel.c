@@ -252,6 +252,9 @@ static void Scheduler(void) {
             }
             break;
         }
+        else if ((i == os_kernel.current_task->priority) && (os_kernel.current_task->status == OS_TASK_RUNNING)) {
+            break;
+        }
     }
     if (os_kernel.current_task != NULL) {
         if (os_kernel.current_task != *os_kernel.next_task) {

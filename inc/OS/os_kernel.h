@@ -1,9 +1,10 @@
-#ifndef INC_OSKERNEL_H_
-#define INC_OSKERNEL_H_
+#ifndef __OS_KERNEL_H_
+#define __OS_KERNEL_H_
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "OS/osConfig.h"
+#include "OS/os_config.h"
+
 #define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
 #define SIZE_STACK_FRAME        17U                                 // Size stack frame
 #define STACK_POS(x)            (MAX_TASK_SIZE - x)
@@ -36,7 +37,7 @@ typedef enum {
     OS_TASK_RUNNING,    // Running state
     OS_TASK_BLOCK,      // Blocked state
     OS_TASK_SUSPEND     // Suspended state
-} osTaskStatusType;
+} os_task_status_t;
 
 typedef enum
 {
@@ -55,17 +56,17 @@ typedef enum
     #endif /* (PRIORITY_LEVELS > 1) */
 
     OS_PRIORITY_QTY,
-} osPriorityType;
+} os_priority_t;
 
 typedef struct {
     uint32_t memory[MAX_TASK_SIZE];           // Memory stack
     uint32_t stackPointer;                    // Stack pointer of task
     void *entryPoint;                         // Callback executed on task
     uintptr_t id;                             // Task ID, it's a memory position
-    osTaskStatusType status;                  // Status task.
-    osPriorityType priority;                  // Task priority.
+    os_task_status_t status;                  // Status task.
+    os_priority_t priority;                  // Task priority.
     tick_type_t wake_up_time;                 // Time to unblock task if blocked
-} osTaskObject;
+} os_task_t;
 
 
 /**
@@ -77,27 +78,31 @@ typedef struct {
 *
 *@return Return true if task was success or false in otherwise.
 */
-
-bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback);
+bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback);
 
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
  */
-void osStart(void);
+void OS_KERNEL_Start(void);
 
-tick_type_t osGetTickCount(void);
+/**
+ * @brief Get Tick coun of the OS
+ *
+ * @return tick_type_t
+ */
+tick_type_t OS_KERNEL_GetTickCount(void);
 
 /**
  * @brief Execute a delay for the current task.
  *
  * @param[in]   tick Number ticks delayed.
  */
-void osDelay(const uint32_t tick);
+void OS_KERNEL_Delay(const uint32_t tick);
 
 /**
  * @brief Function used as default when some task return for a problem.
  */
-void osReturnTaskHook(void);
+void OS_KERNEL_ReturnTaskHook(void);
 
 /**
  * @brief Function used if user would like to do something on systick hander interrupt.
@@ -109,19 +114,19 @@ void osReturnTaskHook(void);
  * @warning The function shouldn't call an OS API in any case because a new scheduler
  * could occur.
  */
-void osSysTickHook(void);
+void OS_KERNEL_SysTickHook(void);
 
 /**
  * @brief Function used when happen error on OS
  *
  * @param[in]   caller  Function pointer where error happened.
  */
-void osErrorHook(void *caller);
+void OS_KERNEL_ErrorHook(void *caller);
 
 /**
  * @brief Idle task of the operation system.
  */
-void osIdleTask(void);
+void OS_KERNEL_IdleTask(void);
 
 
-#endif // INC_OSKERNEL_H_
+#endif // __OS_KERNEL_H_

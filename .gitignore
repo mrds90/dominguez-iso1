@@ -68,3 +68,4 @@ board.mk
 
 compile.sh
 download.sh
+clean.sh

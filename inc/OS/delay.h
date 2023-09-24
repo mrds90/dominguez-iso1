@@ -11,8 +11,8 @@
 #ifndef __DELAY_H
 #define __DELAY_H
 
-#include "OS/osKernel.h"
-#include "OS/osArchHeaders.h"
+#include "OS/os_kernel.h"
+#include "OS/os_arch_headers.h"
 
 /* =========[Definition of public macros] =========================================== */
 
@@ -26,8 +26,8 @@
  * @param wake_up_time
  * @param task
  */
-__STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, osTaskObject *task) {
-    task->wake_up_time = delay_time + osGetTickCount();
+__STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
+    task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
     task->status = OS_TASK_BLOCK;
 }
 
@@ -36,8 +36,8 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, osTaskObject *t
  *
  * @param blocked_task
  */
-__STATIC_FORCEINLINE void DELAY_EvalDelay(osTaskObject *task) {
-    if ((osGetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
+__STATIC_FORCEINLINE void DELAY_EvalDelay(os_task_t *task) {
+    if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
         task->status = OS_TASK_READY;
     }
 }

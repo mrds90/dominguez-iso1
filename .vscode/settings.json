@@ -7,6 +7,7 @@
         "stddef.h": "c",
         "delay.h": "c",
         "stdbool.h": "c",
-        "cmsis.h": "c"
+        "cmsis.h": "c",
+        "os_arch_headers.h": "c"
     }
 }

@@ -1,11 +1,11 @@
 #include <stddef.h>
 
 
-#include "OS/osArchHeaders.h"
-#include "OS/osKernel.h"
+#include "OS/os_arch_headers.h"
+#include "OS/os_kernel.h"
 #include "OS/delay.h"
 /* ==================== Define private variables ==================== */
-#define FIRST_INDEX_TASK_PRIORITY     0U
+
 #define IDLE_TASK_INDEX               0U
 #define TASK_IDLE_PRIORITY            0U
 
@@ -14,8 +14,8 @@
  *
  */
 typedef struct {
-    osTaskObject **pop_ptr;
-    osTaskObject **push_ptr;
+    os_task_t **pop_ptr;
+    os_task_t **push_ptr;
 } fifo_task_t;
 
 /**
@@ -23,9 +23,9 @@ typedef struct {
  *
  */
 typedef struct {
-    osTaskObject *listTask[MAX_NUMBER_TASK];                                ///< Task list.
-    osTaskObject *currentTask;                                              ///< Current handler task running.
-    osTaskObject **nextTask;                                                ///< Next handler task will be run.
+    os_task_t *listTask[MAX_NUMBER_TASK];                                ///< Task list.
+    os_task_t *currentTask;                                              ///< Current handler task running.
+    os_task_t **nextTask;                                                ///< Next handler task will be run.
     fifo_task_t task_fifo[OS_PRIORITY_QTY];                                 ///< Pointer to fifos with task by priority
     tick_type_t sys_tick;                                                   ///< Tick count of the system
 } osKernelObject;
@@ -33,7 +33,7 @@ typedef struct {
 
 /* ================== Private variables declaration ================= */
 
-static osTaskObject *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
+static os_task_t *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
 static osKernelObject os_kernel = {.listTask[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                    .currentTask = NULL,
                                    .sys_tick = 0,
@@ -79,12 +79,12 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer);
  * @brief Choose the next task to be running
  *
  */
-static void scheduler(void);
+static void Scheduler(void);
 
-__STATIC_FORCEINLINE void PushTaskToWaitingList(osTaskObject *task);
+__STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task);
 
 /* ================= Public functions implementation ================ */
-bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback) {
+bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback) {
     bool ret = false;
     uint8_t i;
     for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
@@ -114,7 +114,7 @@ bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback
 
 
         // Fill controls OS structure
-        osTaskObject **temp = (osTaskObject **)handler->id;
+        os_task_t **temp = (os_task_t **)handler->id;
         *temp = (handler); //save the handler in the os_kernel.listTask[i].
         PushTaskToWaitingList(handler);
     }
@@ -122,17 +122,17 @@ bool osTaskCreate(osTaskObject *handler, osPriorityType priority, void *callback
     return ret;
 }
 
-void osStart(void) {
+void OS_KERNEL_Start(void) {
     extern uint32_t SystemCoreClock;
     NVIC_DisableIRQ(SysTick_IRQn);
     NVIC_DisableIRQ(PendSV_IRQn);
-    static osTaskObject idle_task;
+    static os_task_t idle_task;
 
     // Create idle_task
     idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
-    idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)osIdleTask;
+    idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)OS_KERNEL_IdleTask;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
-    idle_task.entryPoint                                = osIdleTask;
+    idle_task.entryPoint                                = OS_KERNEL_IdleTask;
     idle_task.id                                        = (uintptr_t) &os_kernel.listTask[IDLE_TASK_INDEX];
     idle_task.status                                    = OS_TASK_READY;
     idle_task.priority                                  = TASK_IDLE_PRIORITY;
@@ -142,7 +142,7 @@ void osStart(void) {
 
 
     // Start in Idle Task
-    os_kernel.nextTask = (osTaskObject **)idle_task.id;
+    os_kernel.nextTask = (os_task_t **)idle_task.id;
     PushTaskToWaitingList(*os_kernel.nextTask);
     /*
      * All interrupts has priority 0 (maximum) at start execution. For that don't happen fault
@@ -159,16 +159,16 @@ void osStart(void) {
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
-tick_type_t osGetTickCount(void) {
+tick_type_t OS_KERNEL_GetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
-void osDelay(const uint32_t tick) {
+void OS_KERNEL_Delay(const uint32_t tick) {
     NVIC_DisableIRQ(SysTick_IRQn);
 
     DELAY_SetDelay(tick, os_kernel.currentTask);
 
-    scheduler();
+    Scheduler();
     /*
      * Set up bit corresponding exception PendSV
      */
@@ -188,21 +188,21 @@ void osDelay(const uint32_t tick) {
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
-__attribute__((weak)) void osReturnTaskHook(void) {
+__attribute__((weak)) void OS_KERNEL_ReturnTaskHook(void) {
     while (1) {
         __WFI();
     }
 }
 
-__attribute__((weak)) void osSysTickHook(void) {
+__attribute__((weak)) void OS_KERNEL_SysTickHook(void) {
     __ASM volatile ("nop");
 }
 
-__attribute__((weak)) void osErrorHook(void *caller) {
+__attribute__((weak)) void OS_KERNEL_ErrorHook(void *caller) {
     while (1) {}
 }
 
-__attribute__((weak)) void osIdleTask(void) {
+__attribute__((weak)) void OS_KERNEL_IdleTask(void) {
     while (1) {
         __WFI();
     }
@@ -235,7 +235,7 @@ static uint32_t ChangeOfContext(uint32_t current_stask_pointer) {
  *
  * @return Returns true if a new task to be executed.
  */
-static void scheduler(void) {
+static void Scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
         if (os_kernel.listTask[i]->status == OS_TASK_BLOCK) {
             DELAY_EvalDelay(os_kernel.listTask[i]);
@@ -263,7 +263,7 @@ static void scheduler(void) {
     }
 }
 
-__STATIC_FORCEINLINE void PushTaskToWaitingList(osTaskObject *task) {
+__STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task) {
     *os_kernel.task_fifo[task->priority].push_ptr = task;
     os_kernel.task_fifo[task->priority].push_ptr++;
     if (os_kernel.task_fifo[task->priority].push_ptr == &fifo_task[task->priority][MAX_NUMBER_TASK]) {
@@ -275,8 +275,8 @@ __STATIC_FORCEINLINE void PushTaskToWaitingList(osTaskObject *task) {
 
 void SysTick_Handler(void) {
     os_kernel.sys_tick++;
-    scheduler();
-
+    Scheduler();
+    OS_KERNEL_SysTickHook();
     /*
      * Set up bit corresponding exception PendSV
      */

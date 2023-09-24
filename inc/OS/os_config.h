@@ -1,5 +1,5 @@
 /**
- * @file osConfig.h
+ * @file os_config.h
  * @author Marcos Dominguez
  * @brief
  * @version 0.1

@@ -1,5 +1,5 @@
 /**
- * @file osArchHeader.h
+ * @file os_arch_headers.h
  * @author Marcos Dominguez
  * @brief
  * @version 0.1
@@ -14,10 +14,12 @@
 #ifdef ARCH_NXP_LPC_43XX
 #include "cmsis.h"
 #include "chip.h"
-#elif ARCH_STM_32_F4XX
+#else
+#ifdef ARCH_STM_32_F4XX
 #include "system_stm32f4xx.h"
 #include "stm32f429xx.h"
 #include "core_cm4.h"
+#endif
 #endif
 
 #include "cmsis_gcc.h"

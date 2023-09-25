@@ -60,8 +60,8 @@ typedef enum
 
 typedef struct {
     uint32_t memory[MAX_TASK_SIZE];           // Memory stack
-    uint32_t stackPointer;                    // Stack pointer of task
-    void *entryPoint;                         // Callback executed on task
+    uint32_t stack_pointer;                    // Stack pointer of task
+    void *entry_point;                         // Callback executed on task
     uintptr_t id;                             // Task ID, it's a memory position
     os_task_status_t status;                  // Status task.
     os_priority_t priority;                   // Task priority.

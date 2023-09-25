@@ -28,13 +28,13 @@ typedef struct {
     os_task_t **next_task;                                                ///< Next handler task will be run.
     fifo_task_t task_fifo[OS_PRIORITY_QTY];                                 ///< Pointer to fifos with task by priority
     tick_type_t sys_tick;                                                   ///< Tick count of the system
-} osKernelObject;
+} os_kernel_t;
 
 
 /* ================== Private variables declaration ================= */
 
 static os_task_t *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
-static osKernelObject os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
+static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                    .current_task = NULL,
                                    .sys_tick = 0,
                                    .task_fifo = {
@@ -107,8 +107,8 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
         handler->memory[STACK_POS(LR_PREV_VALUE_POSTION)] = EXEC_RETURN_VALUE;
 
         // Pointer function of task.
-        handler->entryPoint     = callback;
-        handler->stackPointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+        handler->entry_point     = callback;
+        handler->stack_pointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
         handler->status         = OS_TASK_READY;
         handler->priority       = priority;
 
@@ -132,11 +132,11 @@ void OS_KERNEL_Start(void) {
     idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
     idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)OS_KERNEL_IdleTask;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
-    idle_task.entryPoint                                = OS_KERNEL_IdleTask;
+    idle_task.entry_point                                = OS_KERNEL_IdleTask;
     idle_task.id                                        = (uintptr_t) &os_kernel.list_task[IDLE_TASK_INDEX];
     idle_task.status                                    = OS_TASK_READY;
     idle_task.priority                                  = TASK_IDLE_PRIORITY;
-    idle_task.stackPointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+    idle_task.stack_pointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
     os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
     os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
 
@@ -220,14 +220,14 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
 static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
     // Storage last stack pointer used on current task and change state to ready.
     if (os_kernel.current_task != NULL) {
-        os_kernel.current_task->stackPointer  = current_stack_pointer;
+        os_kernel.current_task->stack_pointer  = current_stack_pointer;
     }
 
     // Switch address memory points on current task for next task and change state of task
     os_kernel.current_task            = *os_kernel.next_task;
     os_kernel.current_task->status    = OS_TASK_RUNNING;
 
-    return os_kernel.current_task->stackPointer;
+    return os_kernel.current_task->stack_pointer;
 }
 
 /**

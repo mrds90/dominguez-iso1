@@ -5,30 +5,7 @@
 #include <stdbool.h>
 #include "OS/os_config.h"
 
-#define MAX_TASK_SIZE          (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
-#define SIZE_STACK_FRAME        17U                                 // Size stack frame
-#define STACK_POS(x)            (MAX_TASK_SIZE - x)
-
-#define XPSR_VALUE              1 << 24     // xPSR.T = 1
-#define EXEC_RETURN_VALUE       0xFFFFFFF9  // EXEC_RETURN value. Return to thread mode with MSP, not use FPU
-#define XPSR_REG_POSITION       1U
-#define PC_REG_POSTION          2U
-#define LR_REG_POSTION          3U
-#define R12_REG_POSTION         4U
-#define R3_REG_POSTION          5U
-#define R2_REG_POSTION          6U
-#define R1_REG_POSTION          7U
-#define R0_REG_POSTION          8U
-#define LR_PREV_VALUE_POSTION   9U
-#define R4_REG_POSTION          10U
-#define R5_REG_POSTION          11U
-#define R6_REG_POSTION          12U
-#define R7_REG_POSTION          13U
-#define R8_REG_POSTION          14U
-#define R9_REG_POSTION          15U
-#define R10_REG_POSTION         16U
-#define R11_REG_POSTION         17U
-
+#define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
 /* Possible task status */
 typedef uint64_t tick_type_t;
 
@@ -59,13 +36,13 @@ typedef enum
 } os_priority_t;
 
 typedef struct {
-    uint32_t memory[MAX_TASK_SIZE];           // Memory stack
-    uint32_t stack_pointer;                    // Stack pointer of task
-    void *entry_point;                         // Callback executed on task
-    uintptr_t id;                             // Task ID, it's a memory position
-    os_task_status_t status;                  // Status task.
-    os_priority_t priority;                   // Task priority.
-    tick_type_t wake_up_time;                 // Time to unblock task if blocked
+    uint32_t memory[MAX_TASK_SIZE];          // Memory stack
+    uint32_t stack_pointer;                  // Stack pointer of task
+    void *entry_point;                       // Callback executed on task
+    uintptr_t id;                            // Task ID, it's a memory position
+    os_task_status_t status;                 // Status task.
+    os_priority_t priority;                  // Task priority.
+    tick_type_t wake_up_time;                // Time to unblock task if blocked
 } os_task_t;
 
 

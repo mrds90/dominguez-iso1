@@ -9,6 +9,7 @@
         "stdbool.h": "c",
         "cmsis.h": "c",
         "os_arch_headers.h": "c",
-        "os_kernel.h": "c"
+        "os_kernel.h": "c",
+        "os_config.h": "c"
     }
 }

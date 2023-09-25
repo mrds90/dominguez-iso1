@@ -4,10 +4,33 @@
 #include "OS/os_arch_headers.h"
 #include "OS/os_kernel.h"
 #include "OS/delay.h"
-/* ==================== Define private variables ==================== */
 
-#define IDLE_TASK_INDEX               0U
-#define TASK_IDLE_PRIORITY            0U
+#define IDLE_TASK_INDEX         0U
+#define TASK_IDLE_PRIORITY      0U
+
+#define SIZE_STACK_FRAME        17U                         // Size stack frame
+#define STACK_POS(x)            (MAX_TASK_SIZE - x)
+#define XPSR_VALUE              1 << 24                     // xPSR.T = 1
+#define EXEC_RETURN_VALUE       0xFFFFFFF9                  // EXEC_RETURN value. Return to thread mode with MSP, not use FPU
+#define XPSR_REG_POSITION       1U
+#define PC_REG_POSTION          2U
+#define LR_REG_POSTION          3U
+#define R12_REG_POSTION         4U
+#define R3_REG_POSTION          5U
+#define R2_REG_POSTION          6U
+#define R1_REG_POSTION          7U
+#define R0_REG_POSTION          8U
+#define LR_PREV_VALUE_POSTION   9U
+#define R4_REG_POSTION          10U
+#define R5_REG_POSTION          11U
+#define R6_REG_POSTION          12U
+#define R7_REG_POSTION          13U
+#define R8_REG_POSTION          14U
+#define R9_REG_POSTION          15U
+#define R10_REG_POSTION         16U
+#define R11_REG_POSTION         17U
+
+/* ==================== Define private variables ==================== */
 
 /**
  * @brief Hold the pointers of the fifos for each priority
@@ -26,8 +49,8 @@ typedef struct {
     os_task_t *list_task[MAX_NUMBER_TASK];                                ///< Task list.
     os_task_t *current_task;                                              ///< Current handler task running.
     os_task_t **next_task;                                                ///< Next handler task will be run.
-    fifo_task_t task_fifo[OS_PRIORITY_QTY];                                 ///< Pointer to fifos with task by priority
-    tick_type_t sys_tick;                                                   ///< Tick count of the system
+    fifo_task_t task_fifo[OS_PRIORITY_QTY];                               ///< Pointer to fifos with task by priority
+    tick_type_t sys_tick;                                                 ///< Tick count of the system
 } os_kernel_t;
 
 
@@ -132,13 +155,13 @@ void OS_KERNEL_Start(void) {
     idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
     idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)OS_KERNEL_IdleTask;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
-    idle_task.entry_point                                = OS_KERNEL_IdleTask;
+    idle_task.entry_point                               = OS_KERNEL_IdleTask;
     idle_task.id                                        = (uintptr_t) &os_kernel.list_task[IDLE_TASK_INDEX];
     idle_task.status                                    = OS_TASK_READY;
     idle_task.priority                                  = TASK_IDLE_PRIORITY;
-    idle_task.stack_pointer                              = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
-    os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
-    os_kernel.list_task[IDLE_TASK_INDEX]                 = &idle_task;
+    idle_task.stack_pointer                             = (uint32_t)(idle_task.memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+    os_kernel.list_task[IDLE_TASK_INDEX]                = &idle_task;
+    os_kernel.list_task[IDLE_TASK_INDEX]                = &idle_task;
 
 
     // Start in Idle Task

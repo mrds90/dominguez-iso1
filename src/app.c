@@ -67,10 +67,10 @@ static void task1(void) {
         gpioToggle(LED1);
         i++;
         if (i == 4) {
-            osTaskDelete(&osTask3);
+            osTaskSuspend(&osTask3);
         }
         if (i == 8) {
-            osTaskCreate(&osTask3, 1, task3);
+            osTaskResume(&osTask3);
             osTaskCreate(&osTask2, 2, task2);
         }
     }
@@ -83,7 +83,7 @@ static void task2(void) {
         osDelay(1000);
         gpioToggle(LED2);
         j++;
-        if (j == 2) {
+        if (j == 4) {
             osTaskDelete(NULL);
         }
     }

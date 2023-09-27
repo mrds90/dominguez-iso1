@@ -164,7 +164,40 @@ void OS_KERNEL_TaskDelete(os_task_t *handler) {
     os_kernel.next_task = &os_kernel.list_task[IDLE_TASK_INDEX];
     AsyncChangeOfContext();
     NVIC_EnableIRQ(SysTick_IRQn);
+}
 
+void OS_KERNEL_TaskSuspend(os_task_t *handler) {
+    if ((handler == NULL) || (handler->status != OS_TASK_SUSPEND)) {
+        NVIC_DisableIRQ(SysTick_IRQn);
+        if (handler == NULL) {
+            handler = os_kernel.current_task;
+            handler->status = OS_TASK_READY;
+        }
+
+        handler->prev_status = handler->status;
+
+        handler->status = OS_TASK_SUSPEND;
+
+
+        os_kernel.next_task = &os_kernel.list_task[IDLE_TASK_INDEX];
+        AsyncChangeOfContext();
+        NVIC_EnableIRQ(SysTick_IRQn);
+    }
+}
+
+void OS_KERNEL_TaskResume(os_task_t *handler) {
+    if (handler->status == OS_TASK_SUSPEND) {
+        NVIC_DisableIRQ(SysTick_IRQn);
+
+        handler->status = handler->prev_status;
+        PushTaskToWaitingList(handler);
+        if (handler->priority > os_kernel.current_task->priority) {
+            if (handler->status == OS_TASK_READY) {
+                AsyncChangeOfContext();
+            }
+        }
+        NVIC_EnableIRQ(SysTick_IRQn);
+    }
 }
 
 void OS_KERNEL_Start(void) {
@@ -275,14 +308,17 @@ static void Scheduler(void) {
         }
     }
     for (uint8_t i = (PRIORITY_LEVELS - 1); i < PRIORITY_LEVELS; i--) {
-        if (os_kernel.task_fifo[i].pop_ptr != os_kernel.task_fifo[i].push_ptr) {
+        while (os_kernel.task_fifo[i].pop_ptr != os_kernel.task_fifo[i].push_ptr) {
             os_kernel.next_task = os_kernel.task_fifo[i].pop_ptr++;
             if (os_kernel.task_fifo[i].pop_ptr == &fifo_task[i][MAX_NUMBER_TASK]) {
                 os_kernel.task_fifo[i].pop_ptr = &fifo_task[i][0];
             }
-            break;
+            os_task_t *temp = *os_kernel.next_task;
+            if (temp->status == OS_TASK_READY) {
+                break;
+            }
         }
-        else if ((i == os_kernel.current_task->priority) && (os_kernel.current_task->status == OS_TASK_RUNNING)) {
+        if ((i == os_kernel.current_task->priority) && (os_kernel.current_task->status == OS_TASK_RUNNING) || (os_kernel.current_task != *os_kernel.next_task)) {
             break;
         }
     }

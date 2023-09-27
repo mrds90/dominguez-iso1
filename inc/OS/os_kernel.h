@@ -41,6 +41,7 @@ typedef struct {
     void *entry_point;                       // Callback executed on task
     uintptr_t id;                            // Task ID, it's a memory position
     os_task_status_t status;                 // Status task.
+    os_task_status_t prev_status;            // Previous status of the task.
     os_priority_t priority;                  // Task priority.
     tick_type_t wake_up_time;                // Time to unblock task if blocked
 } os_task_t;
@@ -57,7 +58,30 @@ typedef struct {
  */
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback);
 
+/**
+ *@brief Delete task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
 void OS_KERNEL_TaskDelete(os_task_t *handler);
+
+/**
+ *@brief Suspend task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
+void OS_KERNEL_TaskSuspend(os_task_t *handler);
+
+/**
+ *@brief Resume task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
+void OS_KERNEL_TaskResume(os_task_t *handler);
+
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
  */

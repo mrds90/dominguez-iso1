@@ -23,10 +23,31 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *
  *@return Return true if task was success or false in otherwise.
  */
-#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate(handler, priority, callback)
+#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (os_priority_t) priority, (void *) callback)
 
-#define osTaskDelete(handler) OS_KERNEL_TaskDelete(handler)
+/**
+ *@brief Delete task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
+#define osTaskDelete(handler) OS_KERNEL_TaskDelete((osTaskObject *)handler)
 
+/**
+ *@brief Suspend task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
+#define osTaskSuspend(handler) OS_KERNEL_TaskSuspend((osTaskObject *)handler);
+
+/**
+ *@brief Resume task.
+ *
+ *@param[in, out]   handler Data structure of task, if NULL will delete current task.
+ *
+ */
+#define osTaskResume(handler) OS_KERNEL_TaskResume((osTaskObject *)handler)
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
  */

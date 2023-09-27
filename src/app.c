@@ -42,9 +42,9 @@ int main(void) {
     // ----- Repeat for ever -------------------------
     // Initialize all configured peripherals
     boardConfig();
-    osTaskCreate(&osTask1, 1, task1);
+    osTaskCreate(&osTask1, 2, task1);
     osTaskCreate(&osTask2, 2, task2);
-    osTaskCreate(&osTask3, 3, task3);
+    osTaskCreate(&osTask3, 1, task3);
 
 
     osStart();
@@ -66,16 +66,26 @@ static void task1(void) {
         osDelay(2000);
         gpioToggle(LED1);
         i++;
+        if (i == 4) {
+            osTaskDelete(&osTask3);
+        }
+        if (i == 8) {
+            osTaskCreate(&osTask3, 1, task3);
+            osTaskCreate(&osTask2, 2, task2);
+        }
     }
 }
 
 static void task2(void) {
-    uint32_t j = 0;
+    static uint32_t j = 0;
 
     while (1) {
         osDelay(1000);
         gpioToggle(LED2);
         j++;
+        if (j == 2) {
+            osTaskDelete(NULL);
+        }
     }
 }
 

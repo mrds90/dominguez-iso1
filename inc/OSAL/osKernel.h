@@ -25,6 +25,8 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  */
 #define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate(handler, priority, callback)
 
+#define osTaskDelete(handler) OS_KERNEL_TaskDelete(handler)
+
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
  */

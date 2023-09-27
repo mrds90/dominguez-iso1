@@ -58,35 +58,35 @@ typedef struct {
 
 static os_task_t *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
 static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
-                                   .current_task = NULL,
-                                   .sys_tick = 0,
-                                   .task_fifo = {
-                                       [OS_LOW_PRIORITY] = {
-                                           .pop_ptr = fifo_task[OS_LOW_PRIORITY],
-                                           .push_ptr = fifo_task[OS_LOW_PRIORITY],
-                                       },
+                                .current_task = NULL,
+                                .sys_tick = 0,
+                                .task_fifo = {
+                                    [OS_LOW_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_LOW_PRIORITY],
+                                        .push_ptr = fifo_task[OS_LOW_PRIORITY],
+                                    },
                                     #if (PRIORITY_LEVELS > 1)
-                                       [OS_NORMAL_PRIORITY] = {
-                                           .pop_ptr = fifo_task[OS_NORMAL_PRIORITY],
-                                           .push_ptr = fifo_task[OS_NORMAL_PRIORITY],
-                                       },
+                                    [OS_NORMAL_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_NORMAL_PRIORITY],
+                                        .push_ptr = fifo_task[OS_NORMAL_PRIORITY],
+                                    },
                                     #if (PRIORITY_LEVELS > 2)
-                                       [OS_HIGH_PRIORITY] = {
-                                           .pop_ptr = fifo_task[OS_HIGH_PRIORITY],
-                                           .push_ptr = fifo_task[OS_HIGH_PRIORITY],
-                                       },
+                                    [OS_HIGH_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_HIGH_PRIORITY],
+                                        .push_ptr = fifo_task[OS_HIGH_PRIORITY],
+                                    },
                                     #if (PRIORITY_LEVELS > 3)
-                                       [OS_VERYHIGH_PRIORITY] = {
-                                           .pop_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
-                                           .push_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
-                                       },
+                                    [OS_VERYHIGH_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
+                                        .push_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
+                                    },
                                     #if (PRIORITY_LEVELS > 4)
                                         #error "Invlid priority level"
                                     #endif /* (PRIORITY_LEVELS > 4) */
                                     #endif /* (PRIORITY_LEVELS > 3) */
                                     #endif /* (PRIORITY_LEVELS > 2) */
                                     #endif /* (PRIORITY_LEVELS > 1) */
-                                   }};
+                                }};
 
 /* ================== Private functions declaration ================= */
 
@@ -105,6 +105,8 @@ static uint32_t ChangeOfContext(uint32_t current_stack_pointer);
 static void Scheduler(void);
 
 __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task);
+
+__STATIC_FORCEINLINE void AsyncChangeOfContext(void);
 
 /* ================= Public functions implementation ================ */
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback) {
@@ -143,6 +145,26 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
     }
 
     return ret;
+}
+
+void OS_KERNEL_TaskDelete(os_task_t *handler) {
+    NVIC_DisableIRQ(SysTick_IRQn);
+
+    bool delete_current_task = false;
+    if (handler == NULL) {
+        handler = os_kernel.current_task;
+        delete_current_task = true;
+    }
+
+    os_task_t **temp = (os_task_t **)handler->id;
+    *temp = (os_task_t *)(NULL);
+    if (delete_current_task) {
+        os_kernel.current_task = (os_task_t *)(NULL);
+    }
+    os_kernel.next_task = &os_kernel.list_task[IDLE_TASK_INDEX];
+    AsyncChangeOfContext();
+    NVIC_EnableIRQ(SysTick_IRQn);
+
 }
 
 void OS_KERNEL_Start(void) {
@@ -191,23 +213,8 @@ void OS_KERNEL_Delay(const uint32_t tick) {
 
     DELAY_SetDelay(tick, os_kernel.current_task);
 
-    Scheduler();
-    /*
-     * Set up bit corresponding exception PendSV
-     */
-    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    AsyncChangeOfContext();
 
-    /*
-     * Instruction Synchronization Barrier; flushes the pipeline and ensures that
-     * all previous instructions are completed before executing new instructions
-     */
-    __ISB();
-
-    /*
-     * Data Synchronization Barrier; ensures that all memory accesses are
-     * completed before next instruction is executed
-     */
-    __DSB();
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
@@ -295,6 +302,26 @@ __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task) {
     if (os_kernel.task_fifo[task->priority].push_ptr == &fifo_task[task->priority][MAX_NUMBER_TASK]) {
         os_kernel.task_fifo[task->priority].push_ptr = &fifo_task[task->priority][0];
     }
+}
+
+__STATIC_FORCEINLINE void AsyncChangeOfContext(void) {
+    Scheduler();
+    /*
+     * Set up bit corresponding exception PendSV
+     */
+    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+
+    /*
+     * Instruction Synchronization Barrier; flushes the pipeline and ensures that
+     * all previous instructions are completed before executing new instructions
+     */
+    __ISB();
+
+    /*
+     * Data Synchronization Barrier; ensures that all memory accesses are
+     * completed before next instruction is executed
+     */
+    __DSB();
 }
 
 /* ========== Processor Interruption and Exception Handlers ========= */

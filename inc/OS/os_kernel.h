@@ -57,6 +57,7 @@ typedef struct {
  */
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback);
 
+void OS_KERNEL_TaskDelete(os_task_t *handler);
 /**
  * @brief Initialization pendSV exception with lowest priority possible.
  */

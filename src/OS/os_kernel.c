@@ -241,7 +241,7 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
-void OS_KERNEL_Delay(const uint32_t tick) {
+void OS_KERNEL_Delay(const tick_type_t tick) {
     NVIC_DisableIRQ(SysTick_IRQn);
 
     DELAY_SetDelay(tick, os_kernel.current_task);

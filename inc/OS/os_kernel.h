@@ -99,7 +99,7 @@ tick_type_t OS_KERNEL_GetTickCount(void);
  *
  * @param[in]   tick Number ticks delayed.
  */
-void OS_KERNEL_Delay(const uint32_t tick);
+void OS_KERNEL_Delay(const tick_type_t tick);
 
 /**
  * @brief Function used as default when some task return for a problem.

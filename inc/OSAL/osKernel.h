@@ -65,7 +65,7 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *
  * @param[in]   tick Number ticks delayed.
  */
-#define osDelay(tick) OS_KERNEL_Delay(tick)
+#define osDelay(tick) OS_KERNEL_Delay((tick_type_t)tick)
 
 #define osReturnTaskHook OS_KERNEL_ReturnTaskHook
 

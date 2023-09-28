@@ -36,10 +36,12 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
  *
  * @param blocked_task
  */
-__STATIC_FORCEINLINE void DELAY_EvalDelay(os_task_t *task) {
+__STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
+    bool ret = false;
     if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
-        task->status = OS_TASK_READY;
+        ret = true;
     }
+    return ret;
 }
 
 #endif /* __DELAY_H */

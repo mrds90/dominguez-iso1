@@ -300,11 +300,9 @@ static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
  */
 static void Scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
-        if (os_kernel.list_task[i]->status == OS_TASK_BLOCK) {
-            DELAY_EvalDelay(os_kernel.list_task[i]);
-            if (os_kernel.list_task[i]->status == OS_TASK_READY) {
-                PushTaskToWaitingList(os_kernel.list_task[i]);
-            }
+        if (DELAY_EvalDelay(os_kernel.list_task[i])) {
+            os_kernel.list_task[i]->status = OS_TASK_READY;
+            PushTaskToWaitingList(os_kernel.list_task[i]);
         }
     }
     for (uint8_t i = (PRIORITY_LEVELS - 1); i < PRIORITY_LEVELS; i--) {

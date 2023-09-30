@@ -8,6 +8,7 @@
 
 #include "app.h"
 #include "OSAL/osKernel.h"
+#include "OS/semaphore.h"
 
 #include "sapi.h"
 /*=====[Definition macros of private constants]==============================*/
@@ -33,6 +34,9 @@ static osTaskObject osTask1;
 static osTaskObject osTask2;
 static osTaskObject osTask3;
 
+static semaphore_t semaphore1;
+static semaphore_t semaphore2;
+static semaphore_t semaphore3;
 /*=====[Main function, program entry point after power on or reset]==========*/
 
 
@@ -46,7 +50,9 @@ int main(void) {
     osTaskCreate(&osTask2, 2, task2);
     osTaskCreate(&osTask3, 1, task3);
 
-
+    SEMAPHORE_CreateBinary(&semaphore1);
+    SEMAPHORE_CreateBinary(&semaphore2);
+    SEMAPHORE_CreateBinary(&semaphore3);
     osStart();
 
     while (1) {
@@ -63,16 +69,9 @@ static void task1(void) {
     uint32_t i = 0;
 
     while (1) {
-        osDelay(2000);
+        SEMAPHORE_Take(&semaphore1, MAX_DELAY);
         gpioToggle(LED1);
         i++;
-        if (i == 4) {
-            osTaskSuspend(&osTask3);
-        }
-        if (i == 8) {
-            osTaskResume(&osTask3);
-            osTaskCreate(&osTask2, 2, task2);
-        }
     }
 }
 
@@ -80,11 +79,11 @@ static void task2(void) {
     static uint32_t j = 0;
 
     while (1) {
-        osDelay(1000);
+        SEMAPHORE_Take(&semaphore2, 450);
         gpioToggle(LED2);
         j++;
-        if (j == 4) {
-            osTaskDelete(NULL);
+        if ((j % 2) == 0) {
+            SEMAPHORE_Give(&semaphore1);
         }
     }
 }
@@ -96,5 +95,8 @@ static void task3(void) {
         osDelay(500);
         gpioToggle(LED3);
         k++;
+        if ((k % 2) == 0) {
+            SEMAPHORE_Give(&semaphore2);
+        }
     }
 }

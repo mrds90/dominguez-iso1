@@ -6,6 +6,7 @@
 #include "OS/os_config.h"
 
 #define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
+#define MAX_DELAY               0xFFFFFFFFFFFFFFFFUL
 /* Possible task status */
 typedef uint64_t tick_type_t;
 
@@ -130,5 +131,10 @@ void OS_KERNEL_ErrorHook(void *caller);
  */
 void OS_KERNEL_IdleTask(void);
 
+/**
+ * @brief Method to make an async change of context
+ *
+ */
+void OS_KERNEL_PortYield(void);
 
 #endif // __OS_KERNEL_H_

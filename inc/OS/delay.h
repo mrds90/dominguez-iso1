@@ -27,7 +27,12 @@
  * @param task
  */
 __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
-    task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
+    if (delay_time == MAX_DELAY) {
+        task->wake_up_time = MAX_DELAY;
+    }
+    else {
+        task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
+    }
     task->status = OS_TASK_BLOCK;
 }
 

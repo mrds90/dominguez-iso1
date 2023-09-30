@@ -4,6 +4,7 @@
 #include "OS/os_arch_headers.h"
 #include "OS/os_kernel.h"
 #include "OS/delay.h"
+#include "OS/os_methods.h"
 
 #define IDLE_TASK_INDEX         0U
 #define TASK_IDLE_PRIORITY      0U
@@ -271,6 +272,10 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
     }
 }
 
+void OS_KERNEL_PortYield(void) {
+    AsyncChangeOfContext();
+}
+
 /* ================ Private functions implementation ================ */
 
 /**
@@ -356,6 +361,17 @@ __STATIC_FORCEINLINE void AsyncChangeOfContext(void) {
      * completed before next instruction is executed
      */
     __DSB();
+}
+
+void OS_METHODS_SetTaskAsReady(os_task_t *handler) {
+    if (handler->status != OS_TASK_READY) {
+        handler->status = OS_TASK_READY;
+        PushTaskToWaitingList(handler);
+    }
+}
+
+os_task_t*OS_METHODS_GetCurrentTask(void) {
+    return os_kernel.current_task;
 }
 
 /* ========== Processor Interruption and Exception Handlers ========= */

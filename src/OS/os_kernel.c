@@ -137,7 +137,12 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
         handler->entry_point     = callback;
         handler->stack_pointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
         handler->status         = OS_TASK_READY;
-        handler->priority       = priority;
+        if (priority >= PRIORITY_LEVELS) {
+            handler->priority = PRIORITY_LEVELS - 1;
+        }
+        else {
+            handler->priority       = priority;
+        }
 
 
         // Fill controls OS structure

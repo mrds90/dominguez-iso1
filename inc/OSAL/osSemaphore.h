@@ -18,11 +18,11 @@ typedef semaphore_t osSemaphoreObject;
  * @brief Take semaphore.
  *
  * @param[in,out]   semaphore   Semaphore handler.
- * @param[in,out]   wait_time   Tick to wait until semaphore fail.
+ * 
  *
  * @return Returns true if the semaphore could be taken.
  */
-#define osSemaphoreTake(semaphore, wait_time)       OS_SEMAPHORE_Take((osSemaphoreObject*) semaphore, wait_time)
+#define osSemaphoreTake(semaphore)                  OS_SEMAPHORE_Take((osSemaphoreObject*) semaphore, MAX_DELAY)
 
 /**
  * @brief Give semaphore.

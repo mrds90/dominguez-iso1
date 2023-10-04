@@ -60,7 +60,7 @@ bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t da
  *
  * @param[in, out]  queue   Queue object.
  * @param[in, out]  data    Data sent to the queue.
- * @param[in]       timeout Number of ticks to wait before blocking the task..
+ * @param[in]       timeout Number of ticks to wait before unblocking the task.
  *
  * @return Returns true if it could be put in the queue
  * in otherwise false.
@@ -72,7 +72,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
  *
  * @param[in, out]  queue   Queue object.
  * @param[in, out]  buffer  Buffer to  save the data read from the queue.
- * @param[in]       timeout Number of ticks to wait before blocking the task..
+ * @param[in]       timeout Number of ticks to wait before unblocking the task.
  *
  * @return Returns true if it was possible to take it out in the queue
  * in otherwise false.

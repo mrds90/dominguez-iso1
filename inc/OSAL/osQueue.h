@@ -30,7 +30,7 @@ typedef struct
  *
  * @param[in, out]  queue_ptr   Queue object.
  * @param[in, out]  data        Data sent to the queue.
- * @param[in]       timeout     Number of ticks to wait before blocking the task..
+ * @param[in]       timeout     Number of ticks to wait before unblocking the task.
  *
  * @return Returns true if it could be put in the queue
  * in otherwise false.
@@ -42,7 +42,7 @@ typedef struct
  *
  * @param[in, out]  queue_ptr   Queue object.
  * @param[in, out]  buffer      Buffer to  save the data read from the queue.
- * @param[in]       timeout     Number of ticks to wait before blocking the task..
+ * @param[in]       timeout     Number of ticks to wait before unblocking the task.
  *
  * @return Returns true if it was possible to take it out in the queue
  * in otherwise false.

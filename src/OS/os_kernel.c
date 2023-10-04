@@ -105,11 +105,21 @@ static uint32_t ChangeOfContext(uint32_t current_stack_pointer);
  */
 static void Scheduler(void);
 
+/**
+ * @brief Send to a priority FIFO the task
+ * 
+ * @param task task handler to push
+ */
 __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task);
 
+/**
+ * @brief Yield method
+ * 
+ */
 __STATIC_FORCEINLINE void AsyncChangeOfContext(void);
 
 /* ================= Public functions implementation ================ */
+
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback) {
     bool ret = false;
     if ((handler != NULL) && (callback != NULL)) {

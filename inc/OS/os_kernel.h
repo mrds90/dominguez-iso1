@@ -60,7 +60,7 @@ typedef struct {
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback);
 
 /**
- *@brief Delete task.
+ *@brief Delete task removing from kernel task list.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
  *
@@ -68,7 +68,7 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
 void OS_KERNEL_TaskDelete(os_task_t *handler);
 
 /**
- *@brief Suspend task.
+ *@brief Suspend task removing from kernel waiting task FIFOs.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
  *
@@ -76,7 +76,7 @@ void OS_KERNEL_TaskDelete(os_task_t *handler);
 void OS_KERNEL_TaskSuspend(os_task_t *handler);
 
 /**
- *@brief Resume task.
+ *@brief Resume task restoring suspended task.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
  *
@@ -89,7 +89,7 @@ void OS_KERNEL_TaskResume(os_task_t *handler);
 void OS_KERNEL_Start(void);
 
 /**
- * @brief Get Tick coun of the OS
+ * @brief Get Tick count of the OS
  *
  * @return tick_type_t
  */
@@ -108,7 +108,7 @@ void OS_KERNEL_Delay(const tick_type_t tick);
 void OS_KERNEL_ReturnTaskHook(void);
 
 /**
- * @brief Function used if user would like to do something on systick hander interrupt.
+ * @brief Function used if user would like to do something on Systick handler interrupt.
  * It has a default implementation that do anything.
  *
  * @warning The function used to perform operations on each Systick in the system. It
@@ -120,7 +120,7 @@ void OS_KERNEL_ReturnTaskHook(void);
 void OS_KERNEL_SysTickHook(void);
 
 /**
- * @brief Function used when happen error on OS
+ * @brief Function used when happen error on OS.
  *
  * @param[in]   caller  Function pointer where error happened.
  */

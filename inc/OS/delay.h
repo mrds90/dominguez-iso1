@@ -39,7 +39,7 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
 }
 
 /**
- * @brief Check if the is ready
+ * @brief Check if the delay is ready
  *
  * @param blocked_task
  */

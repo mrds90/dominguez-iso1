@@ -1,7 +1,9 @@
 /**
  * @file os_queue.h
  * @author Marcos Dominguez
- * @brief
+ * 
+ * @brief Queue class.
+ * 
  * @version 0.1
  * @date 2023-10-03
  *
@@ -16,22 +18,26 @@
 
 /* =========[Definition of public macros] =========================================== */
 
-#define BYTES_OF_QUEUE(data_size, element_qty) (data_size * element_qty)
+#define BYTES_OF_QUEUE(data_size, element_qty) (data_size * element_qty) ///< Bytes used by a queue to storage the data.
 
 /* =========[Definition of public data types] ======================================= */
 
-typedef uint8_t *queue_mem_t;
+typedef uint8_t *queue_mem_t;                   ///< Pointer to queue data region in ram.
 
+/**
+ * @brief queue struct that manage class atributes
+ * 
+ */
 typedef struct {
-    os_task_t *task_list[MAX_NUMBER_TASK];
-    os_task_t **pop_task;
-    os_task_t **push_task;
-    queue_mem_t fifo_ptr;
-    queue_mem_t pop_element;
-    queue_mem_t push_element;
-    uint8_t data_size;
-    uint8_t n_elements;
-    uint8_t used_elements;
+    os_task_t *task_list[MAX_NUMBER_TASK];      ///< Task blocked by the queue.
+    os_task_t **pop_task;                       ///< Pointer of task to unblock.
+    os_task_t **push_task;                      ///< Pointer where blocked task pointer will be storaged.
+    queue_mem_t fifo_ptr;                       ///< Pointer to ram memory addr where queue data is storaged.
+    queue_mem_t pop_element;                    ///< Address where next element will be popped-out.
+    queue_mem_t push_element;                   ///< Address where next element will be pushed-out.
+    uint8_t data_size;                          ///< Size of elements queued.
+    uint8_t n_elements;                         ///< Elements quantity that can be queued.
+    uint8_t used_elements;                      ///< Elements quantity that has been queued.
 } queue_t;
 
 /* =========[Definition of public methods]========================================== */
@@ -43,7 +49,7 @@ typedef struct {
  * @param[in]       queue_store_ptr           Address of ram where queue elements will be storaged.
  * @param[in]       data_size                 Data size of the queue.
  * @param[in]       queue_elements            Data size of the queue.
- * @param[in]       starting_used_elements    elemens of the queue used.
+ * @param[in]       starting_used_elements    Elements of the queue used.
  *
  * @return Returns true if was success in otherwise false.
  */

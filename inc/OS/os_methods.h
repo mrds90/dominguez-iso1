@@ -19,7 +19,7 @@
 /* =========[Definition of public methods]========================================== */
 
 /**
- * @brief Set task as ready and push in fifo to be cheked by scheduler
+ * @brief Set task as ready and push in fifo to be checked by scheduler
  *
  * @param handler
  */

@@ -9,8 +9,8 @@ typedef semaphore_t osSemaphoreObject;
  * @brief Initializes semaphore binary or not.
  *
  * @param[in,out]   semaphore   Semaphore handler.
- * @param[in]       maxCount    Maximum count value that can be reached (NOT IMPLEMENTED).
- * @param[in]       count       The count value assigned to the semaphore when it is created (NOT IMPLEMENTED).
+ * @param[in]       maxCount    Maximum count value that can be reached (up to MAX_SEMPH_COUNT). (if 0 or 1 selected is a binary semaphore).
+ * @param[in]       count       The count value assigned to the semaphore when it is created (must be 0 to start taken).
  */
 #define osSemaphoreInit(semaphore, maxCount, count) OS_SEMAPHORE_Create((osSemaphoreObject*) semaphore, maxCount, count)
 

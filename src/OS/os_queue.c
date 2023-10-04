@@ -21,18 +21,22 @@
 
 /* ================= Public functions implementation ================ */
 
-bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t data_size, uint8_t queue_elements) {
+bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t data_size, uint8_t queue_elements, uint8_t starting_used_elements) {
     bool ret = false;
     if (queue_obj != NULL) {
         if ((queue_store_ptr != NULL)) {
+            if (starting_used_elements > queue_elements) {
+                starting_used_elements = queue_elements;
+            }
             queue_obj->pop_task = queue_obj->task_list;
             queue_obj->push_task = queue_obj->task_list;
             queue_obj->fifo_ptr = queue_store_ptr;
             queue_obj->push_element = queue_obj->fifo_ptr;
+            queue_obj->push_element += starting_used_elements;
             queue_obj->pop_element = queue_obj->fifo_ptr;
             queue_obj->data_size = data_size;
             queue_obj->n_elements = queue_elements;
-            queue_obj->used_elements = 0;
+            queue_obj->used_elements = starting_used_elements;
             ret = true;
         }
     }
@@ -89,7 +93,7 @@ bool OS_QUEUE_Receive(queue_t *queue_obj, void *data, const tick_type_t timeout)
         }
         OS_KERNEL_Delay(timeout);
     }
-    if (queue_obj->used_elements > 0) {
+    if ((queue_obj->used_elements > 0) && (data!= NULL)) {
         memcpy(data, queue_obj->pop_element, queue_obj->data_size);
         queue_obj->pop_element += queue_obj->data_size;
         if (queue_obj->pop_element - (queue_obj->fifo_ptr - 1) >= BYTES_OF_QUEUE(queue_obj->data_size, queue_obj->n_elements)) {

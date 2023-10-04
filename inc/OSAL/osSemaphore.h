@@ -12,7 +12,7 @@ typedef semaphore_t osSemaphoreObject;
  * @param[in]       maxCount    Maximum count value that can be reached (NOT IMPLEMENTED).
  * @param[in]       count       The count value assigned to the semaphore when it is created (NOT IMPLEMENTED).
  */
-#define osSemaphoreInit(semaphore, maxCount, count) OS_SEMAPHORE_CreateBinary((osSemaphoreObject*) semaphore)
+#define osSemaphoreInit(semaphore, maxCount, count) OS_SEMAPHORE_Create((osSemaphoreObject*) semaphore, maxCount, count)
 
 /**
  * @brief Take semaphore.

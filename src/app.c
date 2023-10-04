@@ -13,12 +13,12 @@
 
 #include "sapi.h"
 /*=====[Definition macros of private constants]==============================*/
+
 #define SEMAPHORE_TEST  1
 #define QUEUE_TEST      2
-#define API_TEST        QUEUE_TEST
+#define API_TEST        SEMAPHORE_TEST
 
 
-#define QUEUE_SIZE      6
 /*=====[Definitions of extern global variables]==============================*/
 
 /*=====[Definitions of private methods]======================================*/
@@ -60,7 +60,7 @@ int main(void) {
     osTaskCreate(&osTask2, 2, task2);
     osTaskCreate(&osTask3, 1, task3);
     #if (API_TEST == SEMAPHORE_TEST)
-    osSemaphoreInit(&semaphore1, 0, 0);
+    osSemaphoreInit(&semaphore1, 4, 0);
     osSemaphoreInit(&semaphore2, 0, 0);
     osSemaphoreInit(&semaphore3, 0, 0);
     #elif (API_TEST == QUEUE_TEST)
@@ -88,6 +88,7 @@ static void task1(void) {
 
     while (1) {
         osSemaphoreTake(&semaphore1, MAX_DELAY);
+        osDelay(100);
         gpioToggle(LED1);
         i++;
     }

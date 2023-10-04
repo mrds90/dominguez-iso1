@@ -39,14 +39,15 @@ typedef struct {
 /**
  * @brief Initialize the queue.
  *
- * @param[in, out]  queue_obj         Queue object.
- * @param[in]       queue_store_ptr   Address of ram where queue elements will be storaged.
- * @param[in]       data_size         Data size of the queue.
- * @param[in]       queue_elements    Data size of the queue.
+ * @param[in, out]  queue_obj                 Queue object.
+ * @param[in]       queue_store_ptr           Address of ram where queue elements will be storaged.
+ * @param[in]       data_size                 Data size of the queue.
+ * @param[in]       queue_elements            Data size of the queue.
+ * @param[in]       starting_used_elements    elemens of the queue used.
  *
  * @return Returns true if was success in otherwise false.
  */
-bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t data_size, uint8_t queue_elements);
+bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t data_size, uint8_t queue_elements, uint8_t starting_used_elements);
 
 /**
  * @brief Send data to the queue.

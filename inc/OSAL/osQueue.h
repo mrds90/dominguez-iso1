@@ -23,7 +23,7 @@ typedef struct
  *
  * @return Returns true if was success in otherwise false.
  */
-#define osQueueInit(queue_ptr, dataSize)    OS_QUEUE_Create(&((osQueueObject *)queue_ptr)->queue, (queue_mem_t)((osQueueObject *)queue_ptr)->queue_buffer, dataSize, MAX_SIZE_QUEUE / dataSize)
+#define osQueueInit(queue_ptr, dataSize)    OS_QUEUE_Create(&((osQueueObject *)queue_ptr)->queue, (queue_mem_t)((osQueueObject *)queue_ptr)->queue_buffer, dataSize, MAX_SIZE_QUEUE / dataSize, 0)
 
 /**
  * @brief Send data to the queue.

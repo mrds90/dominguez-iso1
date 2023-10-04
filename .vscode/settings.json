@@ -11,6 +11,8 @@
         "os_arch_headers.h": "c",
         "os_kernel.h": "c",
         "os_config.h": "c",
-        "semaphore.h": "c"
+        "semaphore.h": "c",
+        "os_queue.h": "c",
+        "osqueue.h": "c"
     }
 }

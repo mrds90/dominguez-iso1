@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef __SEMAPHORE_H
-#define __SEMAPHORE_H
+#ifndef __OS_SEMAPHORE_H
+#define __OS_SEMAPHORE_H
 
 #include "OS/os_kernel.h"
 /* =========[Definition of public macros] =========================================== */
@@ -23,8 +23,7 @@ typedef enum {
     SEMAPHORE_STATE_QTY,
 } semaphore_state_t;
 
-typedef struct
-{
+typedef struct {
     os_task_t *task_list[MAX_NUMBER_TASK];
     os_task_t **pop_task;
     os_task_t **push_task;
@@ -34,10 +33,10 @@ typedef struct
 /* =========[Definition of public methods]========================================== */
 
 
-bool SEMAPHORE_CreateBinary(semaphore_t *semph);
+bool OS_SEMAPHORE_CreateBinary(semaphore_t *semph);
 
-void SEMAPHORE_Give(semaphore_t *semph);
+void OS_SEMAPHORE_Give(semaphore_t *semph);
 
-bool SEMAPHORE_Take(semaphore_t *semph, const tick_type_t wait_time);
+bool OS_SEMAPHORE_Take(semaphore_t *semph, const tick_type_t wait_time);
 
-#endif /* __SEMAPHORE_H */
+#endif /* __OS_SEMAPHORE_H */

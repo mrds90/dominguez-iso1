@@ -243,13 +243,15 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
 }
 
 void OS_KERNEL_Delay(const tick_type_t tick) {
-    NVIC_DisableIRQ(SysTick_IRQn);
+    if (tick > 0) {
+        NVIC_DisableIRQ(SysTick_IRQn);
 
-    DELAY_SetDelay(tick, os_kernel.current_task);
+        DELAY_SetDelay(tick, os_kernel.current_task);
 
-    AsyncChangeOfContext();
+        AsyncChangeOfContext();
 
-    NVIC_EnableIRQ(SysTick_IRQn);
+        NVIC_EnableIRQ(SysTick_IRQn);
+    }
 }
 
 __attribute__((weak)) void OS_KERNEL_ReturnTaskHook(void) {

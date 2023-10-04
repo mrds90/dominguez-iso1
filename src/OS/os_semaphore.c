@@ -8,7 +8,7 @@
  *
  */
 
-#include "OS/semaphore.h"
+#include "OS/os_semaphore.h"
 #include "OS/delay.h"
 #include "OS/os_methods.h"
 
@@ -20,13 +20,13 @@
 
 /* ================= Public functions implementation ================ */
 
-bool SEMAPHORE_CreateBinary(semaphore_t *semph) {
+bool OS_SEMAPHORE_CreateBinary(semaphore_t *semph) {
     semph->pop_task = semph->task_list;
     semph->push_task = semph->task_list;
     semph->status = SEMAPHORE_STATE_TAKEN;
 }
 
-void SEMAPHORE_Give(semaphore_t *semph) {
+void OS_SEMAPHORE_Give(semaphore_t *semph) {
     if (semph->pop_task != NULL) {
         if (semph->status == SEMAPHORE_STATE_TAKEN) {
             semph->status = SEMAPHORE_STATE_FREE;
@@ -43,7 +43,7 @@ void SEMAPHORE_Give(semaphore_t *semph) {
     }
 }
 
-bool SEMAPHORE_Take(semaphore_t *semph, const tick_type_t wait_time) {
+bool OS_SEMAPHORE_Take(semaphore_t *semph, const tick_type_t wait_time) {
     bool ret = false;
     if (semph->pop_task != NULL) {
         NVIC_DisableIRQ(SysTick_IRQn);

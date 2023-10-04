@@ -23,7 +23,7 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *
  * @return Return true if task was success or false in otherwise.
  */
-#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (os_priority_t) priority, (void *) callback)
+#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (osPriorityType) priority, (void *) callback)
 
 /**
  *@brief Delete task.

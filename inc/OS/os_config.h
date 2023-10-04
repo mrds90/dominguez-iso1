@@ -17,7 +17,7 @@
 #define MAX_STACK_SIZE          256U                                ///< Defines maximum stack size for a task.
 #define PRIORITY_LEVELS         4U
 #define SYSTICK_PERIOD_MS       1U                                  ///< Systick period time in mili-second.
-#define MAX_SEMPH_COUNT         32U                                  ///< Max count of the semaphore.
+#define MAX_SEMPH_COUNT         32U                                 ///< Max count of the semaphore.
 
 
 /* =========[Definition of public data types] ======================================= */

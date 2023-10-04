@@ -125,6 +125,7 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
         handler->memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
         // Program pointer (PC) points to function used by the task.
         handler->memory[STACK_POS(PC_REG_POSTION)]      = (uint32_t)callback;
+        handler->memory[STACK_POS(LR_REG_POSTION)]      = (uint32_t)OS_KERNEL_ReturnTaskHook;
 
         /*
          * Previous Link register (LR) value because handler pendSV call function inside exception
@@ -210,6 +211,7 @@ void OS_KERNEL_Start(void) {
     // Create idle_task
     idle_task.memory[STACK_POS(XPSR_REG_POSITION)]      = XPSR_VALUE;
     idle_task.memory[STACK_POS(PC_REG_POSTION)]         = (uint32_t)OS_KERNEL_IdleTask;
+    idle_task.memory[STACK_POS(LR_REG_POSTION)]         = (uint32_t)OS_KERNEL_ReturnTaskHook;
     idle_task.memory[STACK_POS(LR_PREV_VALUE_POSTION)]  = EXEC_RETURN_VALUE;
     idle_task.entry_point                               = OS_KERNEL_IdleTask;
     idle_task.id                                        = (uintptr_t) &os_kernel.list_task[IDLE_TASK_INDEX];

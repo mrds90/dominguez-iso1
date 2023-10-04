@@ -7,9 +7,9 @@
 /*=====[Inclusions of function dependencies]=================================*/
 
 #include "app.h"
-#include "OSAL/osKernel.h"
-#include "OSAL/osSemaphore.h"
-#include "OSAL/osQueue.h"
+#include "osKernel.h"
+#include "osSemaphore.h"
+#include "osQueue.h"
 
 #include "sapi.h"
 /*=====[Definition macros of private constants]==============================*/

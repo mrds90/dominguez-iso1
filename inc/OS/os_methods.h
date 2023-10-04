@@ -11,7 +11,7 @@
 #ifndef __OS_METHODS_H
 #define __OS_METHODS_H
 
-#include "OS/os_kernel.h"
+#include "os_kernel.h"
 /* =========[Definition of public macros] =========================================== */
 
 /* =========[Definition of public data types] ======================================= */

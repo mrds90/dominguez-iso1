@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "OS/os_kernel.h"
+#include "os_kernel.h"
 
 
 typedef tick_type_t TickType;               ///< hold tick counts.

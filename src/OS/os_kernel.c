@@ -1,10 +1,10 @@
 #include <stddef.h>
 
 
-#include "OS/os_arch_headers.h"
-#include "OS/os_kernel.h"
-#include "OS/delay.h"
-#include "OS/os_methods.h"
+#include "os_arch_headers.h"
+#include "os_kernel.h"
+#include "delay.h"
+#include "os_methods.h"
 
 #define IDLE_TASK_INDEX         0U
 #define TASK_IDLE_PRIORITY      0U

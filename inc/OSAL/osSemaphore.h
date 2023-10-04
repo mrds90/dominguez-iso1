@@ -1,7 +1,7 @@
 #ifndef INC_OSOS_SEMAPHORE_H
 #define INC_OSOS_SEMAPHORE_H
 
-#include "OS/os_semaphore.h"
+#include "os_semaphore.h"
 
 typedef semaphore_t osSemaphoreObject;
 

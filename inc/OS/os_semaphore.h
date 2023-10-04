@@ -11,7 +11,7 @@
 #ifndef __OS_SEMAPHORE_H
 #define __OS_SEMAPHORE_H
 
-#include "OS/os_queue.h"
+#include "os_queue.h"
 /* =========[Definition of public macros] =========================================== */
 #define SEMPH_COUNTS(counts)      (counts > MAX_SEMPH_COUNT ? MAX_SEMPH_COUNT : (counts == 0 ? 1 : counts))  ///< keep max count range within 1 and MAX_SEMPH_COUNT
 /* =========[Definition of public data types] ======================================= */

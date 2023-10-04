@@ -10,9 +10,9 @@
 
 #include <string.h>
 
-#include "OS/os_queue.h"
-#include "OS/delay.h"
-#include "OS/os_methods.h"
+#include "os_queue.h"
+#include "delay.h"
+#include "os_methods.h"
 /* ==================== Define private variables ==================== */
 
 /* ================== Private variables declaration ================= */

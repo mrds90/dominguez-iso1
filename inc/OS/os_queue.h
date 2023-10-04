@@ -13,7 +13,7 @@
 #ifndef __OS_QUEUE_H
 #define __OS_QUEUE_H
 
-#include "OS/os_kernel.h"
+#include "os_kernel.h"
 
 
 /* =========[Definition of public macros] =========================================== */

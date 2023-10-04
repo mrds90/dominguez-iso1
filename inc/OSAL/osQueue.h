@@ -1,7 +1,7 @@
 #ifndef INC_OSQUEUE_H
 #define INC_OSQUEUE_H
 
-#include "OS/os_queue.h"
+#include "os_queue.h"
 
 #define MAX_SIZE_QUEUE  128     // Maximum buffer size of the queue
 

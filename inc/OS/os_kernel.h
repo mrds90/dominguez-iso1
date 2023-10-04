@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "OS/os_config.h"
+#include "os_config.h"
 
 #define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
 #define MAX_DELAY               0xFFFFFFFFFFFFFFFFUL

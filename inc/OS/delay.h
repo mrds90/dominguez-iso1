@@ -11,8 +11,8 @@
 #ifndef __DELAY_H
 #define __DELAY_H
 
-#include "OS/os_kernel.h"
-#include "OS/os_arch_headers.h"
+#include "os_kernel.h"
+#include "os_arch_headers.h"
 
 /* =========[Definition of public macros] =========================================== */
 

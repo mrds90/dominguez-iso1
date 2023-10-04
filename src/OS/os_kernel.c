@@ -180,6 +180,9 @@ void OS_KERNEL_TaskSuspend(os_task_t *handler) {
         NVIC_DisableIRQ(SysTick_IRQn);
         if (handler == NULL) {
             handler = os_kernel.current_task;
+            if (handler == NULL) {
+                return;
+            }
             handler->status = OS_TASK_READY;
         }
 
@@ -195,17 +198,19 @@ void OS_KERNEL_TaskSuspend(os_task_t *handler) {
 }
 
 void OS_KERNEL_TaskResume(os_task_t *handler) {
-    if (handler->status == OS_TASK_SUSPEND) {
-        NVIC_DisableIRQ(SysTick_IRQn);
+    if (handler != NULL) {
+        if (handler->status == OS_TASK_SUSPEND) {
+            NVIC_DisableIRQ(SysTick_IRQn);
 
-        handler->status = handler->prev_status;
-        PushTaskToWaitingList(handler);
-        if (handler->priority > os_kernel.current_task->priority) {
-            if (handler->status == OS_TASK_READY) {
-                AsyncChangeOfContext();
+            handler->status = handler->prev_status;
+            PushTaskToWaitingList(handler);
+            if (handler->priority > os_kernel.current_task->priority) {
+                if (handler->status == OS_TASK_READY) {
+                    AsyncChangeOfContext();
+                }
             }
+            NVIC_EnableIRQ(SysTick_IRQn);
         }
-        NVIC_EnableIRQ(SysTick_IRQn);
     }
 }
 

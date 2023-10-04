@@ -27,13 +27,15 @@
  * @param task
  */
 __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
-    if (delay_time == MAX_DELAY) {
-        task->wake_up_time = MAX_DELAY;
+    if (task != NULL) {
+        if (delay_time == MAX_DELAY) {
+            task->wake_up_time = MAX_DELAY;
+        }
+        else {
+            task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
+        }
+        task->status = OS_TASK_BLOCK;
     }
-    else {
-        task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
-    }
-    task->status = OS_TASK_BLOCK;
 }
 
 /**
@@ -43,8 +45,10 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
  */
 __STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
     bool ret = false;
-    if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
-        ret = true;
+    if (task != NULL) {
+        if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
+            ret = true;
+        }
     }
     return ret;
 }

@@ -87,7 +87,7 @@ static void task1(void) {
     uint32_t i = 0;
 
     while (1) {
-        osSemaphoreTake(&semaphore1, MAX_DELAY);
+        osSemaphoreTake(&semaphore1);
         osDelay(100);
         gpioToggle(LED1);
         i++;
@@ -98,7 +98,7 @@ static void task2(void) {
     static uint32_t j = 0;
 
     while (1) {
-        osSemaphoreTake(&semaphore2, 450);
+        osSemaphoreTake(&semaphore2);
         gpioToggle(LED2);
         j++;
         if ((j % 2) == 0) {

@@ -15,13 +15,13 @@ typedef os_priority_t osPriorityType;       ///< Priority levels
 typedef os_task_t osTaskObject;             ///< task Objects that hold information for the kernel
 
 /**
- *@brief Create task.
+ * @brief Create task.
  *
- *@param[in, out]   handler Data structure of task.
- *@param[in]       priority Task priority level.
- *@param[in]       callback Function executed on task
+ * @param[in,out]   handler     Data structure of task.
+ * @param[in]       priority    Task priority level.
+ * @param[in]       callback    Function executed on task
  *
- *@return Return true if task was success or false in otherwise.
+ * @return Return true if task was success or false in otherwise.
  */
 #define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (os_priority_t) priority, (void *) callback)
 

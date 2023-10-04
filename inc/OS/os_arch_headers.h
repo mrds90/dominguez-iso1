@@ -16,8 +16,8 @@
 #include "chip.h"
 #else
 #ifdef ARCH_STM_32_F4XX
-#include "system_stm32f4xx.h"
 #include "stm32f429xx.h"
+#include "system_stm32f4xx.h"
 #include "core_cm4.h"
 #endif
 #endif

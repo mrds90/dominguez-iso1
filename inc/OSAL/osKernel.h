@@ -6,11 +6,26 @@
 #include "os_kernel.h"
 
 
-typedef tick_type_t TickType;               ///< hold tick counts.
+typedef tick_type_t TickType;               ///< Hold tick counts.
 
 typedef os_task_status_t osTaskStatusType;  ///< Status of the OS tasks
 
-typedef os_priority_t osPriorityType;       ///< Priority levels
+/**
+ * @brief Possible task status.
+ */
+typedef enum {
+    #if (PRIORITY_LEVELS > 3)
+    OS_VERYHIGH_PRIORITY,
+    #endif
+    #if (PRIORITY_LEVELS > 2)
+    OS_HIGH_PRIORITY,
+    #endif
+    #if (PRIORITY_LEVELS > 1)
+    OS_NORMAL_PRIORITY,
+    #endif
+    OS_LOW_PRIORITY,                        ///< Idle task priority
+} osPriorityType;
+
 
 typedef os_task_t osTaskObject;             ///< task Objects that hold information for the kernel
 
@@ -18,12 +33,12 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  * @brief Create task.
  *
  * @param[in,out]   handler     Data structure of task.
- * @param[in]       priority    Task priority level.
+ * @param[in]       priority    Task priority level from osPriorityType.
  * @param[in]       callback    Function executed on task
  *
  * @return Return true if task was success or false in otherwise.
  */
-#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (osPriorityType) priority, (void *) callback)
+#define osTaskCreate(handler, priority, callback) OS_KERNEL_TaskCreate((osTaskObject *)handler, (osPriorityType) SET_PRIORITY(priority), (void *) callback)
 
 /**
  *@brief Delete task.

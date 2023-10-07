@@ -7,34 +7,53 @@
 
 #define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))  // Defines maximum stack size for a task.
 #define MAX_DELAY               0xFFFFFFFFFFFFFFFFUL
-/* Possible task status */
-typedef uint64_t tick_type_t;
+#define SET_PRIORITY(x)         (((uint32_t)(x) >= PRIORITY_LEVELS) ? priority_map[PRIORITY_LEVELS - 1] : priority_map[x])
 
+typedef uint64_t tick_type_t; ///< Tick data type.
+
+/**
+ * @brief Available priorities for the task.
+ * 
+ */
 typedef enum {
-    OS_TASK_READY,      // Ready state
-    OS_TASK_RUNNING,    // Running state
-    OS_TASK_BLOCK,      // Blocked state
-    OS_TASK_SUSPEND     // Suspended state
+    OS_TASK_READY,                  ///< Ready state.
+    OS_TASK_RUNNING,                ///< Running state.
+    OS_TASK_BLOCK,                  ///< Blocked state.
+    OS_TASK_SUSPEND                 ///< Suspended state.
 } os_task_status_t;
 
+/**
+ * @brief Kernel Priorities.
+ * 
+ */
 typedef enum
 {
-    OS_LOW_PRIORITY,
+    OS_KERNEL_LOW_PRIORITY,         ///< Idle task priority (LOWEST).
     #if (PRIORITY_LEVELS > 1)
-    OS_NORMAL_PRIORITY,
+    OS_KERNEL_NORMAL_PRIORITY,      ///< Normal priority level.
     #if (PRIORITY_LEVELS > 2)
-    OS_HIGH_PRIORITY,
+    OS_KERNEL_HIGH_PRIORITY,        ///< High priority level.
     #if (PRIORITY_LEVELS > 3)
-    OS_VERYHIGH_PRIORITY,
-    #if (PRIORITY_LEVELS > 4)
-        #error "Invlid priority level"
-    #endif /* (PRIORITY_LEVELS > 4) */
+    OS_KERNEL_VERYHIGH_PRIORITY,    ///< Highest priority level.
     #endif /* (PRIORITY_LEVELS > 3) */
     #endif /* (PRIORITY_LEVELS > 2) */
     #endif /* (PRIORITY_LEVELS > 1) */
 
-    OS_PRIORITY_QTY,
+    OS_KERNEL_PRIORITY_QTY,
 } os_priority_t;
+
+static const os_priority_t priority_map[OS_KERNEL_PRIORITY_QTY] = {
+    #if (PRIORITY_LEVELS > 3)
+    [(OS_KERNEL_PRIORITY_QTY - OS_KERNEL_VERYHIGH_PRIORITY) - 1] = OS_KERNEL_VERYHIGH_PRIORITY,
+    #endif
+    #if (PRIORITY_LEVELS > 2)
+    [(OS_KERNEL_PRIORITY_QTY - OS_KERNEL_HIGH_PRIORITY) - 1] = OS_KERNEL_HIGH_PRIORITY,
+    #endif
+    #if (PRIORITY_LEVELS > 1)
+    [(OS_KERNEL_PRIORITY_QTY - OS_KERNEL_NORMAL_PRIORITY) - 1] = OS_KERNEL_NORMAL_PRIORITY,
+    #endif
+    [(OS_KERNEL_PRIORITY_QTY - OS_KERNEL_LOW_PRIORITY) - 1] = OS_KERNEL_LOW_PRIORITY,
+};
 
 typedef struct {
     uint32_t memory[MAX_TASK_SIZE];          // Memory stack

@@ -61,9 +61,9 @@ typedef struct {
  * 
  * @param[in, out]  queue_obj                 Queue object.
  * @param[in]       queue_store_ptr           Address of ram where queue elements will be storaged.
- * @param[in]       data_size                 Data size of the queue.
- * @param[in]       queue_elements            Data size of the queue.
- * @param[in]       starting_used_elements    Elements of the queue used (filled with 0).
+ * @param[in]       data_size                 Data size of the queue element.
+ * @param[in]       queue_elements            Queue element quantity.
+ * @param[in]       starting_used_elements    Elements of the queue used at creation (filled with 0).
  *  
  * 
  * @return Returns true if was success in otherwise false.

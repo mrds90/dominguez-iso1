@@ -13,13 +13,15 @@
 
 /* =========[Definition of public macros] =========================================== */
 
-#define MAX_NUMBER_TASK         9U                                  ///< Defines maximum task we could create.
+#define MAX_NUMBER_TASK         8U                                  ///< Defines maximum task we could create.
 #define MAX_STACK_SIZE          256U                                ///< Defines maximum stack size for a task.
 #define PRIORITY_LEVELS         4U                                  ///< Define max priority level of the OS (max possible: 4)
 #define SYSTICK_PERIOD_MS       1U                                  ///< Systick period time in mili-second.
 #define MAX_SEMPH_COUNT         32U                                 ///< Max count of the semaphore.
 
-
+#if (PRIORITY_LEVELS > 4)
+    #error "Invlid priority level: PRIORITY_LEVELS configuration can't be higher than 4"
+#endif /* (PRIORITY_LEVELS > 4) */
 /* =========[Definition of public data types] ======================================= */
 
 /* =========[Definition of public methods]========================================== */

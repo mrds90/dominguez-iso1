@@ -31,7 +31,7 @@
 #define R10_REG_POSTION         16U
 #define R11_REG_POSTION         17U
 
-/* ==================== Define private variables ==================== */
+/* ==================== Define private data type ==================== */
 
 /**
  * @brief Hold the pointers of the fifos for each priority
@@ -50,36 +50,38 @@ typedef struct {
     os_task_t *list_task[MAX_NUMBER_TASK];                                ///< Task list.
     os_task_t *current_task;                                              ///< Current handler task running.
     os_task_t **next_task;                                                ///< Next handler task will be run.
-    fifo_task_t task_fifo[OS_PRIORITY_QTY];                               ///< Pointer to fifos with task by priority
+    fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to fifos with task by priority
     tick_type_t sys_tick;                                                 ///< Tick count of the system
+    bool status;                                                          ///< False: Not started - True: Running
 } os_kernel_t;
 
 
 /* ================== Private variables declaration ================= */
 
-static os_task_t *fifo_task[OS_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
+static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
 static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                 .current_task = NULL,
                                 .sys_tick = 0,
+                                .status = false,
                                 .task_fifo = {
-                                    [OS_LOW_PRIORITY] = {
-                                        .pop_ptr = fifo_task[OS_LOW_PRIORITY],
-                                        .push_ptr = fifo_task[OS_LOW_PRIORITY],
+                                    [OS_KERNEL_LOW_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_KERNEL_LOW_PRIORITY],
+                                        .push_ptr = fifo_task[OS_KERNEL_LOW_PRIORITY],
                                     },
                                     #if (PRIORITY_LEVELS > 1)
-                                    [OS_NORMAL_PRIORITY] = {
-                                        .pop_ptr = fifo_task[OS_NORMAL_PRIORITY],
-                                        .push_ptr = fifo_task[OS_NORMAL_PRIORITY],
+                                    [OS_KERNEL_NORMAL_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_KERNEL_NORMAL_PRIORITY],
+                                        .push_ptr = fifo_task[OS_KERNEL_NORMAL_PRIORITY],
                                     },
                                     #if (PRIORITY_LEVELS > 2)
-                                    [OS_HIGH_PRIORITY] = {
-                                        .pop_ptr = fifo_task[OS_HIGH_PRIORITY],
-                                        .push_ptr = fifo_task[OS_HIGH_PRIORITY],
+                                    [OS_KERNEL_HIGH_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_KERNEL_HIGH_PRIORITY],
+                                        .push_ptr = fifo_task[OS_KERNEL_HIGH_PRIORITY],
                                     },
                                     #if (PRIORITY_LEVELS > 3)
-                                    [OS_VERYHIGH_PRIORITY] = {
-                                        .pop_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
-                                        .push_ptr = fifo_task[OS_VERYHIGH_PRIORITY],
+                                    [OS_KERNEL_VERYHIGH_PRIORITY] = {
+                                        .pop_ptr = fifo_task[OS_KERNEL_VERYHIGH_PRIORITY],
+                                        .push_ptr = fifo_task[OS_KERNEL_VERYHIGH_PRIORITY],
                                     },
                                     #if (PRIORITY_LEVELS > 4)
                                         #error "Invlid priority level"
@@ -107,14 +109,14 @@ static void Scheduler(void);
 
 /**
  * @brief Send to a priority FIFO the task
- * 
+ *
  * @param task task handler to push
  */
 __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task);
 
 /**
  * @brief Yield method
- * 
+ *
  */
 __STATIC_FORCEINLINE void AsyncChangeOfContext(void);
 
@@ -122,44 +124,46 @@ __STATIC_FORCEINLINE void AsyncChangeOfContext(void);
 
 bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *callback) {
     bool ret = false;
-    if ((handler != NULL) && (callback != NULL)) {
-        uint8_t i;
-        for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
-            if (os_kernel.list_task[i] == NULL) {
-                handler->id = (uintptr_t)&os_kernel.list_task[i]; //save the mem position of the element in the list task as ID
-                break;
+    if (handler != NULL) {
+        if (callback != NULL) {
+            uint8_t i;
+            for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
+                if (os_kernel.list_task[i] == NULL) {
+                    handler->id = (uintptr_t)&os_kernel.list_task[i]; //save the mem position of the element in the list task as ID
+                    break;
+                }
             }
-        }
-        if (i < MAX_NUMBER_TASK) { // check if there was memory available
-            ret = true;
-            // xPSR value with 24 bit on one (Thumb mode).
-            handler->memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
-            // Program pointer (PC) points to function used by the task.
-            handler->memory[STACK_POS(PC_REG_POSTION)]      = (uint32_t)callback;
-            handler->memory[STACK_POS(LR_REG_POSTION)]      = (uint32_t)OS_KERNEL_ReturnTaskHook;
+            if (i < MAX_NUMBER_TASK) { // check if there was memory available
+                ret = true;
+                // xPSR value with 24 bit on one (Thumb mode).
+                handler->memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
+                // Program pointer (PC) points to function used by the task.
+                handler->memory[STACK_POS(PC_REG_POSTION)]      = (uint32_t)callback;
+                handler->memory[STACK_POS(LR_REG_POSTION)]      = (uint32_t)OS_KERNEL_ReturnTaskHook;
 
-            /*
-             * Previous Link register (LR) value because handler pendSV call function inside exception
-             * and LR is overwrite with the return value of ChangeOfContext.
-             */
-            handler->memory[STACK_POS(LR_PREV_VALUE_POSTION)] = EXEC_RETURN_VALUE;
+                /*
+                 * Previous Link register (LR) value because handler pendSV call function inside exception
+                 * and LR is overwrite with the return value of ChangeOfContext.
+                 */
+                handler->memory[STACK_POS(LR_PREV_VALUE_POSTION)] = EXEC_RETURN_VALUE;
 
-            // Pointer function of task.
-            handler->entry_point     = callback;
-            handler->stack_pointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
-            handler->status         = OS_TASK_READY;
-            if (priority >= PRIORITY_LEVELS) {
-                handler->priority = PRIORITY_LEVELS - 1;
+                // Pointer function of task.
+                handler->entry_point     = callback;
+                handler->stack_pointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
+                handler->status         = OS_TASK_READY;
+                if ((uint8_t)(priority) >= PRIORITY_LEVELS) {
+                    handler->priority = PRIORITY_LEVELS - 1;
+                }
+                else {
+                    handler->priority       = priority;
+                }
+
+
+                // Fill controls OS structure
+                os_task_t **temp = (os_task_t **)handler->id;
+                *temp = (handler); //save the handler in the os_kernel.list_task[i].
+                PushTaskToWaitingList(handler);
             }
-            else {
-                handler->priority       = priority;
-            }
-
-
-            // Fill controls OS structure
-            os_task_t **temp = (os_task_t **)handler->id;
-            *temp = (handler); //save the handler in the os_kernel.list_task[i].
-            PushTaskToWaitingList(handler);
         }
     }
 
@@ -257,6 +261,8 @@ void OS_KERNEL_Start(void) {
     /* Activate and configure the time of Systick exception */
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / (1000U * SYSTICK_PERIOD_MS));
+    
+    os_kernel.status = true;
 
     NVIC_EnableIRQ(PendSV_IRQn);
     NVIC_EnableIRQ(SysTick_IRQn);

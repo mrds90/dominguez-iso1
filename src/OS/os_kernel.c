@@ -46,6 +46,13 @@ typedef enum {
     OS_STATUS_QTY,              ///< Kernel state quantity.
 } os_status_t;
 
+typedef enum {
+    OS_ERROR_STACK,
+    OS_ERROR_TASK_CREATE,
+    OS_ERROR_TASK_SUSPEND,
+    OS_ERROR_TASK_RESUME,
+} os_error_t;
+
 /**
  * @brief Hold the pointers of the fifos for each priority.
  */
@@ -64,6 +71,7 @@ typedef struct {
     fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to FIFOs with task by priority.
     tick_type_t sys_tick;                                                 ///< Tick count of the system.
     os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted.
+    os_error_t last_error;                                                ///< Last error reported at os.
 } os_kernel_t;
 
 
@@ -178,6 +186,10 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
             }
         }
     }
+    if (ret == false) {
+        os_kernel.last_error = OS_ERROR_TASK_CREATE;
+        OS_KERNEL_ErrorHook((void *)OS_ERROR_TASK_CREATE);
+    }
 
     return ret;
 }
@@ -207,6 +219,8 @@ void OS_KERNEL_TaskSuspend(os_task_t *handler) {
         if (handler == NULL) {
             handler = os_kernel.current_task;
             if (handler == NULL) {
+                os_kernel.last_error = OS_ERROR_TASK_SUSPEND;
+                OS_KERNEL_ErrorHook((void *)OS_ERROR_TASK_SUSPEND);
                 return;
             }
             handler->status = OS_TASK_READY;
@@ -237,6 +251,10 @@ void OS_KERNEL_TaskResume(os_task_t *handler) {
             }
             NVIC_EnableIRQ(SysTick_IRQn);
         }
+    }
+    else {
+        os_kernel.last_error = OS_ERROR_TASK_RESUME;
+        OS_KERNEL_ErrorHook((void *)OS_ERROR_TASK_RESUME);
     }
 }
 
@@ -276,8 +294,11 @@ void OS_KERNEL_Start(void) {
 
     os_kernel.status = OS_STATUS_RUNNING;
 
+    SchedulingAndChageOfContext();
+
     NVIC_EnableIRQ(PendSV_IRQn);
     NVIC_EnableIRQ(SysTick_IRQn);
+
 }
 
 tick_type_t OS_KERNEL_GetTickCount(void) {
@@ -319,7 +340,9 @@ __attribute__((weak)) void OS_KERNEL_SysTickHook(void) {
 }
 
 __attribute__((weak)) void OS_KERNEL_ErrorHook(void *caller) {
-    while (1) {}
+    while (1) {
+        __WFI();
+    }
 }
 
 __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
@@ -442,6 +465,10 @@ void OS_METHODS_InterruptState(bool status) {
  * @brief Count os ticks and call scheduler for posible change of context.
  */
 void SysTick_Handler(void) {
+    if (__get_MSP() >= (uint32_t)&os_kernel.current_task->memory[MAX_TASK_SIZE]) {
+        os_kernel.last_error = OS_ERROR_STACK;
+        OS_KERNEL_ErrorHook((void *)OS_ERROR_STACK);
+    }
     os_kernel.sys_tick++;
     OS_KERNEL_SysTickHook();
     SchedulingAndChageOfContext();

@@ -17,6 +17,12 @@
         "ossemaphore.h": "c",
         "array": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "lpc4337.h": "c",
+        "os_irq.h": "c",
+        "osirq.h": "c",
+        "os_methods.h": "c",
+        "timer_config.h": "c",
+        "cmsis_43xx.h": "c"
     }
 }

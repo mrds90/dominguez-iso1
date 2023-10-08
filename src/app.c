@@ -6,10 +6,12 @@
 
 /*=====[Inclusions of function dependencies]=================================*/
 
+#include "timer_config.h"
 #include "app.h"
 #include "osKernel.h"
 #include "osSemaphore.h"
 #include "osQueue.h"
+
 
 #include "sapi.h"
 /*=====[Definition macros of private constants]==============================*/
@@ -17,7 +19,7 @@
 #define SEMAPHORE_TEST  1
 #define QUEUE_TEST      2
 #define API_TEST        SEMAPHORE_TEST
-
+#define TIMER_RATE      2
 
 /*=====[Definitions of extern global variables]==============================*/
 
@@ -30,6 +32,8 @@ static void task1(void);
 static void task2(void);
 
 static void task3(void);
+
+static void TmrCallback(void);
 
 /*=====[Definitions of public global variables]==============================*/
 
@@ -63,6 +67,7 @@ int main(void) {
     osSemaphoreInit(&semaphore1, 4, 0);
     osSemaphoreInit(&semaphore2, 0, 0);
     osSemaphoreInit(&semaphore3, 0, 0);
+    TIMER_CONFIG_Init(TIMER_RATE, TmrCallback);
     #elif (API_TEST == QUEUE_TEST)
     osQueueInit(&queue1,  sizeof(uint32_t));
     osQueueInit(&queue2, sizeof(uint32_t));
@@ -111,7 +116,7 @@ static void task3(void) {
     uint32_t k = 0;
 
     while (1) {
-        osDelay(500);
+        osSemaphoreTake(&semaphore3);
         gpioToggle(LED3);
         k++;
         if ((k % 2) == 0) {
@@ -165,3 +170,8 @@ static void task3(void) {
 }
 
 #endif
+
+
+static void TmrCallback(void) {
+    osSemaphoreGive(&semaphore3);
+}

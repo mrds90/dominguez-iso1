@@ -5,6 +5,7 @@
 #include "os_kernel.h"
 #include "delay.h"
 #include "os_methods.h"
+#include "os_irq.h"
 
 #define IDLE_TASK_INDEX         0U
 #define TASK_IDLE_PRIORITY      0U
@@ -32,6 +33,13 @@
 #define R11_REG_POSTION         17U
 
 /* ==================== Define private data type ==================== */
+typedef enum {
+    OS_STATUS_RESET,
+    OS_STATUS_RUNNING,
+    OS_STATUS_INTERRUPTED,
+
+    OS_STATUS_QTY,
+} os_status_t;
 
 /**
  * @brief Hold the pointers of the fifos for each priority
@@ -52,7 +60,7 @@ typedef struct {
     os_task_t **next_task;                                                ///< Next handler task will be run.
     fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to fifos with task by priority
     tick_type_t sys_tick;                                                 ///< Tick count of the system
-    bool status;                                                          ///< False: Not started - True: Running
+    os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted
 } os_kernel_t;
 
 
@@ -62,7 +70,7 @@ static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          /
 static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                 .current_task = NULL,
                                 .sys_tick = 0,
-                                .status = false,
+                                .status = OS_STATUS_RESET,
                                 .task_fifo = {
                                     [OS_KERNEL_LOW_PRIORITY] = {
                                         .pop_ptr = fifo_task[OS_KERNEL_LOW_PRIORITY],
@@ -261,8 +269,8 @@ void OS_KERNEL_Start(void) {
     /* Activate and configure the time of Systick exception */
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / (1000U * SYSTICK_PERIOD_MS));
-    
-    os_kernel.status = true;
+
+    os_kernel.status = OS_STATUS_RUNNING;
 
     NVIC_EnableIRQ(PendSV_IRQn);
     NVIC_EnableIRQ(SysTick_IRQn);
@@ -273,7 +281,7 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
 }
 
 void OS_KERNEL_Delay(const tick_type_t tick) {
-    if (tick > 0) {
+    if ((tick > 0) && (os_kernel.status == OS_STATUS_RUNNING)) {
         NVIC_DisableIRQ(SysTick_IRQn);
 
         DELAY_SetDelay(tick, os_kernel.current_task);
@@ -404,6 +412,20 @@ void OS_METHODS_SetTaskAsReady(os_task_t *handler) {
 
 os_task_t*OS_METHODS_GetCurrentTask(void) {
     return os_kernel.current_task;
+}
+
+void OS_METHODS_InterruptState(bool status) {
+    static os_status_t status_history[IRQ_NUMBER];
+    static os_status_t *status_history_ptr = status_history;
+    if (status) {
+        *status_history_ptr = os_kernel.status;
+        status_history_ptr++;
+        os_kernel.status = OS_STATUS_INTERRUPTED;
+    }
+    else {
+        status_history_ptr--;
+        os_kernel.status = *status_history_ptr;
+    }
 }
 
 /* ========== Processor Interruption and Exception Handlers ========= */

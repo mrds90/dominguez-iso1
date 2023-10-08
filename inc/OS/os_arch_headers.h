@@ -14,11 +14,13 @@
 #ifdef ARCH_NXP_LPC_43XX
 #include "cmsis.h"
 #include "chip.h"
+#define LPC4337
 #else
 #ifdef ARCH_STM_32_F4XX
 #include "stm32f429xx.h"
 #include "system_stm32f4xx.h"
 #include "core_cm4.h"
+#define STM32F429
 #endif
 #endif
 

@@ -32,4 +32,10 @@ void OS_METHODS_SetTaskAsReady(os_task_t *handler);
  */
 os_task_t*OS_METHODS_GetCurrentTask(void);
 
+/**
+ * @brief Set or clear the interrupt mode of the kernel 
+ * 
+ * @param status true: Set - false: Clear
+ */
+void OS_METHODS_InterruptState(bool status);
 #endif /* __OS_METHODS_H */

@@ -1,5 +1,32 @@
 # dominguez-iso1
+
 Static Operating System running in Cortex M4F
+
+| Requirement                        | Subrequirement                | Compliance Status                                  |
+| ---------------------------------- | ----------------------------- | -------------------------------------------------- |
+| Memory Type                        | Choice of Memory Type         | Static.                                            |
+| Number of Supported Tasks          | Support for Up to 8 Tasks     | Supports 8 tasks and is configurable.              |
+| Hardware IRQ Management            |                               | Supported for 2 devices.                           |
+| Kernel Control Structure           | Last Error                    | Reports 4 errors.                                  |
+|                                    | Operating System State        | Supports 3 states.                                 |
+|                                    | Scheduling Flag               | Not needed - automatically detected in each API.   |
+|                                    | Task Pointers                 | Supported.                                         |
+| Task Control Structure             | Task Fields                   | Supported.                                         |
+|                                    | Optional: ID Number and Name  | Supports ID numbers, but not names.                |
+| Task Execution States              | Task States                   | Supports 4 states.                                 |
+| Stack Size (256 bytes)             |                               | Supported and configurable.                        |
+| Priority Implementation (4 levels) |                               | Supports up to 4 priority levels.                  |
+| Scheduling Policy (Round-Robin)    |                               | Supported.                                         |
+| System Tick (1 [ms])               |                               | Supported and configurable.                        |
+| OS Hooks                           | tickHook                      | Supported and replaceable.                         |
+|                                    | taskIdle                      | Supported and replaceable.                         |
+|                                    | returnHook                    | Supported and replaceable.                         |
+|                                    | errorHook                     | Supported and replaceable.                         |
+| OS API                             | Delay Function (delay)        | Supported.                                         |
+|                                    | Binary Semaphores             | Supported, with counter semaphores and timeouts.   |
+|                                    | Queues (queue)                | Supported, with user-selectable RAM memory buffer. |
+|                                    | Critical Sections             | Supported.                                         |
+|                                    | Scheduling Forced (cpu yield) | Supported.                                         |
 
 ## Generate documentation
 Doxygen documentation is recommended to explore the project.
@@ -31,7 +58,9 @@ Kernel header from OSAL must be included:
 #include "osKernel.h"
 ```
 ### Create Task
-The system allow create up to ```MAX_NUMBER_TASK``` using the method ```osTaskCreate```. The system is able to create Tasks in all the life of the app.
+The system allow create up to ```MAX_NUMBER_TASK``` using the method ```osTaskCreate```. 
+
+The system is able to create Tasks in all the life of the app.
 
 
 ### Delay
@@ -46,6 +75,7 @@ will be ignored.
 #include "osSemaphore.h"
 ```
 Counter semaphores are supported without timeout. A semaphore taken will lock forever a task or until another task give the semaphore.
+
 For a more complete tool check doxy documentation of ```os_semaphore.h```.
 
 ## Queue API
@@ -63,5 +93,7 @@ For a more complete tool check doxy documentation of ```os_queue.h```.
 
 ## OS Configuration
 The OS allow 4 level of priorities at max. Is possible to choose lower priority quantities with ```PRIORITY_LEVELS``` define.
+
 The stack of each task is defined by ```MAX_STACK_SIZE``` and Systic period is defined by ```SYSTICK_PERIOD_MS```.
+
 The Semaphores with counter can have until ```MAX_SEMPH_COUNT``` counts.

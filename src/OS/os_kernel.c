@@ -36,7 +36,7 @@
 
 /**
  * @brief Possible states of the kernel.
- * 
+ *
  */
 typedef enum {
     OS_STATUS_RESET,            ///< Kernel not started.
@@ -296,6 +296,18 @@ void OS_KERNEL_Delay(const tick_type_t tick) {
     }
 }
 
+void OS_KERNEL_PortYield(void) {
+    SchedulingAndChageOfContext();
+}
+
+void OS_KERNEL_EnterCritical(void) {
+    __ASM volatile ("cpsid i");
+}
+
+void OS_KERNEL_ExitCritical(void) {
+    __ASM volatile ("cpsie i");
+}
+
 __attribute__((weak)) void OS_KERNEL_ReturnTaskHook(void) {
     while (1) {
         __WFI();
@@ -314,10 +326,6 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
     while (1) {
         __WFI();
     }
-}
-
-void OS_KERNEL_PortYield(void) {
-    SchedulingAndChageOfContext();
 }
 
 /* ================ Private functions implementation ================ */
@@ -443,19 +451,55 @@ void SysTick_Handler(void) {
  * @brief Perform change of context moving the msp. also push and pop to the stack all necessary information to preserve both context.
  */
 __attribute__ ((naked)) void PendSV_Handler(void) {
+    // Entering the critical section and disabling interrupts.
+    __ASM volatile ("cpsid i");
+
+    /**
+     * FPU stacking implementation:
+     *
+     * The first three instructions test the EXEC_RETURN[4] bit. The TST instruction performs a
+     * bitwise AND operation between the LR register and the immediate literal. The result of this
+     * operation is not stored, and the N and Z flags are updated. In this case, if the EXEC_RETURN[4] bit = 0
+     * the result of the operation will be zero, and the Z flag will be set to 1, so the EQ condition is met,
+     * and the FPU registers are pushed.
+     */
     __ASM volatile ("tst lr, 0x10");
     __ASM volatile ("it eq");
     __ASM volatile ("vpusheq {s16-s31}");
 
+    /**
+     * When entering the PendSV handler, the first thing executed is a push operation to
+     * save registers R4-R11 and the value of LR, which at this point is EXEC_RETURN.
+     * The push is done in reverse order as it is written in the instruction, so LR
+     * is saved at position 9 (after the stack frame). Since the getNextContext function
+     * is called with a branch with link, the value of LR is modified to store the return address
+     * once the function execution is completed.
+     * The argument passing to getContextoSiguiente is done as specified by AAPCS, with
+     * the only argument passed by R0, and the return value is also stored in R0.
+     *
+     * NOTE: The first entry to this handler (after reset) implies that the push is done onto the
+     * initial stack, which is lost because there is no tracking of the MSP on the first entry.
+     */
     __ASM volatile ("push {r4-r11, lr}");
     __ASM volatile ("mrs r0, msp");
     __ASM volatile ("bl %0" :: "i" (ChangeOfContext));
     __ASM volatile ("msr msp, r0");
-    __ASM volatile ("pop {r4-r11, lr}");     // All values from records retrieved.
+    __ASM volatile ("pop {r4-r11, lr}");    // All register values are recovered
 
+    /**
+     * FPU unstacking implementation:
+     *
+     * Having performed the context switch and recovered the register values, it is necessary
+     * to determine if the context has FPU registers saved. If this is the case,
+     * unstacking of the manually pushed FPU registers is performed.
+     */
     __ASM volatile ("tst lr,0x10");
     __ASM volatile ("it eq");
     __ASM volatile ("vpopeq {s16-s31}");
-    /* An indirect branch is performed with the value of LR, which is once again EXEC_RETURN */
+
+    // Exiting the critical section and enabling interrupts.
+    __ASM volatile ("cpsie i");
+
+    /* Indirect branch with the value of LR, which is once again EXEC_RETURN. */
     __ASM volatile ("bx lr");
 }

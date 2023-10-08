@@ -1,9 +1,9 @@
 /**
  * @file osKernel.h
  * @author Marcos Dominguez
- * 
+ *
  * @brief Task API.
- * 
+ *
  * @version 0.1
  * @date 2023-10-08
  */
@@ -37,7 +37,7 @@ typedef enum {
     OS_NORMAL_PRIORITY,
     #endif
     OS_LOW_PRIORITY,                        ///< Idle task priority.
-} osPriorityType;                          
+} osPriorityType;
 
 
 typedef os_task_t osTaskObject;             ///< Task Objects that hold information for the kernel
@@ -101,6 +101,16 @@ typedef os_task_t osTaskObject;             ///< Task Objects that hold informat
 #define osReturnTaskHook OS_KERNEL_ReturnTaskHook
 
 /**
+ * @brief Declare the end of the critical section.
+ */
+#define osEnterCriticalSection  OS_KERNEL_EnterCritical
+
+/**
+ * @brief Declare the beginning of the critical section.
+ */
+#define osExitCriticalSection   OS_KERNEL_ExitCritical
+
+/**
  * @brief Function used if user would like to do something on systick hander interrupt.
  * It has a default implementation that do nothing.
  *
@@ -122,6 +132,5 @@ typedef os_task_t osTaskObject;             ///< Task Objects that hold informat
  * @brief Idle task of the operation system.
  */
 #define osIdleTask OS_KERNEL_IdleTask
-
 
 #endif // INC_OSKERNEL_H_

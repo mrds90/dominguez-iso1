@@ -1,9 +1,9 @@
 /**
  * @file os_kernel.h
  * @author Marcos Dominguez
- * 
+ *
  * @brief Kernel class atributes and public methods.
- * 
+ *
  * @version 0.1
  * @date 2023-10-08
  */
@@ -52,7 +52,7 @@ typedef enum
     #endif /* (PRIORITY_LEVELS > 1) */
 
     OS_KERNEL_PRIORITY_QTY,
-} os_priority_t;                    
+} os_priority_t;
 
 /**
  * @brief Map of kernel priorities that reverse priority levels (0 as the highest priority).
@@ -136,6 +136,16 @@ tick_type_t OS_KERNEL_GetTickCount(void);
  * @param[in]   tick Number ticks delayed.
  */
 void OS_KERNEL_Delay(const tick_type_t tick);
+
+/**
+ * @brief Declare the end of the critical section.
+ */
+void OS_KERNEL_EnterCritical(void);
+
+/**
+ * @brief Declare the beginning of the critical section.
+ */
+void OS_KERNEL_ExitCritical(void);
 
 /**
  * @brief Function used as default when some task return for a problem.

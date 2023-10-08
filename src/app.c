@@ -174,4 +174,5 @@ static void task3(void) {
 
 static void TmrCallback(void) {
     osSemaphoreGive(&semaphore3);
+    osDelay(1000);
 }

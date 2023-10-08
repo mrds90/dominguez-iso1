@@ -1,19 +1,34 @@
+/**
+ * @file osQueue.h
+ * @author Marcos Dominguez
+ * 
+ * @brief Queue API.
+ * 
+ * @version 0.1
+ * @date 2023-10-08
+ */
+
 #ifndef INC_OSQUEUE_H
 #define INC_OSQUEUE_H
 
 #include "os_queue.h"
 
-#define MAX_SIZE_QUEUE  128     // Maximum buffer size of the queue
+/* =========[Definition of public macros] =========================================== */
+
+#define MAX_SIZE_QUEUE  128                 ///< Maximum buffer size of the queue
+
+/* =========[Definition of public data types] ======================================= */
 
 /**
- * @brief Data structure queue.
+ * @brief Atributes of the queue class.
  */
 typedef struct
 {
-    uint8_t queue_buffer[MAX_SIZE_QUEUE];
-    queue_t queue;
-} osQueueObject;
+    uint8_t queue_buffer[MAX_SIZE_QUEUE];   ///< Buffer that hold queued elements.
+    queue_t queue;                          ///< Kernel queue atributes.
+} osQueueObject;                            
 
+/* =========[Definition of public methods]========================================== */
 
 /**
  * @brief Initialize the queue.

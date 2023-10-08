@@ -6,7 +6,6 @@
  * @date 2023-10-07
  *
  * @copyright Copyright (c) 2023
- *
  */
 /*=====[Avoid multiple inclusion - begin]====================================*/
 #ifndef TIMER_CONFIG_H
@@ -38,6 +37,9 @@ extern "C" {
  */
 void TIMER_CONFIG_Init(uint32_t frequency, void* callback);
 
+/**
+ * @brief Reset the count of the timer.
+ */
 void TIMER_CONFIG_Reset(void);
 /**
  * @brief Get the elapsed time in microseconds since the timer was started.

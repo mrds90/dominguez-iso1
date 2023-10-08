@@ -6,15 +6,12 @@
  * 
  * @version 0.1
  * @date 2023-10-03
- *
- *
  */
 
 #ifndef __OS_QUEUE_H
 #define __OS_QUEUE_H
 
 #include "os_kernel.h"
-
 
 /* =========[Definition of public macros] =========================================== */
 
@@ -25,8 +22,7 @@
 typedef uint8_t *queue_mem_t;                   ///< Pointer to queue data region in ram.
 
 /**
- * @brief queue struct that manage class atributes
- * 
+ * @brief Queue class atributes.
  */
 typedef struct {
     os_task_t *task_list[MAX_NUMBER_TASK];      ///< Task blocked by the queue.
@@ -38,7 +34,7 @@ typedef struct {
     uint8_t data_size;                          ///< Size of elements queued.
     uint8_t n_elements;                         ///< Elements quantity that can be queued.
     uint8_t used_elements;                      ///< Elements quantity that has been queued.
-} queue_t;
+} queue_t;                                      
 
 /* =========[Definition of public methods]========================================== */
 
@@ -47,7 +43,7 @@ typedef struct {
  *
  * @code
  * 
- * //Example of usage
+ * // ============ [Example of usage] =================
  * 
  * #define N_QUEUE_ELEMETS 50
  * 

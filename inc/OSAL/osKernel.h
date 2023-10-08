@@ -1,3 +1,13 @@
+/**
+ * @file osKernel.h
+ * @author Marcos Dominguez
+ * 
+ * @brief Task API.
+ * 
+ * @version 0.1
+ * @date 2023-10-08
+ */
+
 #ifndef INC_OSKERNEL_H_
 #define INC_OSKERNEL_H_
 
@@ -5,13 +15,16 @@
 #include <stdbool.h>
 #include "os_kernel.h"
 
+/* =========[Definition of public macros] =========================================== */
+
+/* =========[Definition of public data types] ======================================= */
 
 typedef tick_type_t TickType;               ///< Hold tick counts.
 
 typedef os_task_status_t osTaskStatusType;  ///< Status of the OS tasks
 
 /**
- * @brief Possible task status.
+ * @brief Priorities accepted by the kernel.
  */
 typedef enum {
     #if (PRIORITY_LEVELS > 3)
@@ -23,11 +36,13 @@ typedef enum {
     #if (PRIORITY_LEVELS > 1)
     OS_NORMAL_PRIORITY,
     #endif
-    OS_LOW_PRIORITY,                        ///< Idle task priority
-} osPriorityType;
+    OS_LOW_PRIORITY,                        ///< Idle task priority.
+} osPriorityType;                          
 
 
-typedef os_task_t osTaskObject;             ///< task Objects that hold information for the kernel
+typedef os_task_t osTaskObject;             ///< Task Objects that hold information for the kernel
+
+/* =========[Definition of public methods]========================================== */
 
 /**
  * @brief Create task.
@@ -44,7 +59,6 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *@brief Delete task.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
- *
  */
 #define osTaskDelete(handler) OS_KERNEL_TaskDelete((osTaskObject *)handler)
 
@@ -52,7 +66,6 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *@brief Suspend task.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
- *
  */
 #define osTaskSuspend(handler) OS_KERNEL_TaskSuspend((osTaskObject *)handler);
 
@@ -60,7 +73,6 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  *@brief Resume task.
  *
  *@param[in, out]   handler Data structure of task, if NULL will delete current task.
- *
  */
 #define osTaskResume(handler) OS_KERNEL_TaskResume((osTaskObject *)handler)
 /**
@@ -82,11 +94,15 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  */
 #define osDelay(tick) OS_KERNEL_Delay((tick_type_t)tick)
 
+/**
+ * @brief Function used if user would like to do something when task function return (if happens).
+ * It has a default implementation that do nothing.
+ */
 #define osReturnTaskHook OS_KERNEL_ReturnTaskHook
 
 /**
  * @brief Function used if user would like to do something on systick hander interrupt.
- * It has a default implementation that do anything.
+ * It has a default implementation that do nothing.
  *
  * @warning The function used to perform operations on each Systick in the system. It
  * be as short as possible because it is called in the Systick interrupt handler.
@@ -96,6 +112,10 @@ typedef os_task_t osTaskObject;             ///< task Objects that hold informat
  */
 #define osSysTickHook OS_KERNEL_SysTickHook
 
+/**
+ * @brief Function used if user would like to do something when an error happens in the OS.
+ * It has a default implementation that do anything.
+ */
 #define osErrorHook OS_KERNEL_ErrorHook
 
 /**

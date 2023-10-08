@@ -23,6 +23,8 @@
         "osirq.h": "c",
         "os_methods.h": "c",
         "timer_config.h": "c",
-        "cmsis_43xx.h": "c"
+        "cmsis_43xx.h": "c",
+        "chip.h": "c",
+        "lpc_types.h": "c"
     }
 }

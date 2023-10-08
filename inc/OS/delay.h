@@ -1,11 +1,11 @@
 /**
  * @file delay.h
  * @author Marcos Dominguez
- * @brief
+ *
+ * @brief Delay methods for the kernel (only used by the kernel).
+ *
  * @version 0.1
  * @date 2023-09-23
- *
- *
  */
 
 #ifndef __DELAY_H
@@ -21,10 +21,10 @@
 /* =========[Definition of public methods]========================================== */
 
 /**
- * @brief Block task until the wake up time
+ * @brief Block task until the wake up time.
  *
- * @param wake_up_time
- * @param task
+ * @param wake_up_time  Time to be blocked.
+ * @param task          Task to be blocked.
  */
 __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
     if (task != NULL) {
@@ -39,9 +39,9 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
 }
 
 /**
- * @brief Check if the delay is ready
+ * @brief Check if the delay is ready.
  *
- * @param blocked_task
+ * @param task  Task to check if is ready or blocked.
  */
 __STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
     bool ret = false;

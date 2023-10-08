@@ -33,40 +33,47 @@
 #define R11_REG_POSTION         17U
 
 /* ==================== Define private data type ==================== */
-typedef enum {
-    OS_STATUS_RESET,
-    OS_STATUS_RUNNING,
-    OS_STATUS_INTERRUPTED,
 
-    OS_STATUS_QTY,
+/**
+ * @brief Possible states of the kernel.
+ * 
+ */
+typedef enum {
+    OS_STATUS_RESET,            ///< Kernel not started.
+    OS_STATUS_RUNNING,          ///< System running in task context.
+    OS_STATUS_INTERRUPTED,      ///< System running in exception context.
+
+    OS_STATUS_QTY,              ///< Kernel state quantity.
 } os_status_t;
 
 /**
- * @brief Hold the pointers of the fifos for each priority
- *
+ * @brief Hold the pointers of the fifos for each priority.
  */
 typedef struct {
-    os_task_t **pop_ptr;
-    os_task_t **push_ptr;
+    os_task_t **pop_ptr;        ///< point the next fifo address where an element will be popped.
+    os_task_t **push_ptr;       ///< point fifo address available for pushing.
 } fifo_task_t;
 
 /**
- * @brief Hold the information of the kernel
- *
+ * @brief Hold the information of the kernel.
  */
 typedef struct {
     os_task_t *list_task[MAX_NUMBER_TASK];                                ///< Task list.
     os_task_t *current_task;                                              ///< Current handler task running.
     os_task_t **next_task;                                                ///< Next handler task will be run.
-    fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to fifos with task by priority
-    tick_type_t sys_tick;                                                 ///< Tick count of the system
-    os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted
+    fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to FIFOs with task by priority.
+    tick_type_t sys_tick;                                                 ///< Tick count of the system.
+    os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted.
 } os_kernel_t;
 
 
 /* ================== Private variables declaration ================= */
 
-static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< fifos that hold the task by priority
+static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< FIFOs that hold the task by priority.
+
+/**
+ * @brief Atributes values of os kernel object.
+ */
 static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                 .current_task = NULL,
                                 .sys_tick = 0,
@@ -104,29 +111,27 @@ static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
 /**
  * @brief Save the stack pointer of the current task and load the msp with the stack pointer of the next task.
  *
- * @param current_stack_pointer
- * @return uint32_t
+ * @param current_stack_pointer     value of the msp.
+ * @return the value of the stack pointer (msp) for the new context.
  */
 static uint32_t ChangeOfContext(uint32_t current_stack_pointer);
 
 /**
  * @brief Choose the next task to be running
- *
  */
 static void Scheduler(void);
 
 /**
- * @brief Send to a priority FIFO the task
+ * @brief Send to a priority FIFO the task.
  *
- * @param task task handler to push
+ * @param task task handler to push.
  */
 __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task);
 
 /**
- * @brief Yield method
- *
+ * @brief Yield method.
  */
-__STATIC_FORCEINLINE void AsyncChangeOfContext(void);
+__STATIC_FORCEINLINE void SchedulingAndChageOfContext(void);
 
 /* ================= Public functions implementation ================ */
 
@@ -135,13 +140,13 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
     if (handler != NULL) {
         if (callback != NULL) {
             uint8_t i;
-            for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { //find available mem region
+            for (i = (IDLE_TASK_INDEX + 1); i < MAX_NUMBER_TASK; i++) { // find available mem region.
                 if (os_kernel.list_task[i] == NULL) {
-                    handler->id = (uintptr_t)&os_kernel.list_task[i]; //save the mem position of the element in the list task as ID
+                    handler->id = (uintptr_t)&os_kernel.list_task[i];   // save the mem position of the element in the list task as ID.
                     break;
                 }
             }
-            if (i < MAX_NUMBER_TASK) { // check if there was memory available
+            if (i < MAX_NUMBER_TASK) { // check if there was memory available.
                 ret = true;
                 // xPSR value with 24 bit on one (Thumb mode).
                 handler->memory[STACK_POS(XPSR_REG_POSITION)]   = XPSR_VALUE;
@@ -155,7 +160,6 @@ bool OS_KERNEL_TaskCreate(os_task_t *handler, os_priority_t priority, void *call
                  */
                 handler->memory[STACK_POS(LR_PREV_VALUE_POSTION)] = EXEC_RETURN_VALUE;
 
-                // Pointer function of task.
                 handler->entry_point     = callback;
                 handler->stack_pointer   = (uint32_t)(handler->memory + MAX_TASK_SIZE - SIZE_STACK_FRAME);
                 handler->status         = OS_TASK_READY;
@@ -193,7 +197,7 @@ void OS_KERNEL_TaskDelete(os_task_t *handler) {
         os_kernel.current_task = (os_task_t *)(NULL);
     }
     os_kernel.next_task = &os_kernel.list_task[IDLE_TASK_INDEX];
-    AsyncChangeOfContext();
+    SchedulingAndChageOfContext();
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
@@ -214,7 +218,7 @@ void OS_KERNEL_TaskSuspend(os_task_t *handler) {
 
 
         os_kernel.next_task = &os_kernel.list_task[IDLE_TASK_INDEX];
-        AsyncChangeOfContext();
+        SchedulingAndChageOfContext();
         NVIC_EnableIRQ(SysTick_IRQn);
     }
 }
@@ -228,7 +232,7 @@ void OS_KERNEL_TaskResume(os_task_t *handler) {
             PushTaskToWaitingList(handler);
             if (handler->priority > os_kernel.current_task->priority) {
                 if (handler->status == OS_TASK_READY) {
-                    AsyncChangeOfContext();
+                    SchedulingAndChageOfContext();
                 }
             }
             NVIC_EnableIRQ(SysTick_IRQn);
@@ -286,7 +290,7 @@ void OS_KERNEL_Delay(const tick_type_t tick) {
 
         DELAY_SetDelay(tick, os_kernel.current_task);
 
-        AsyncChangeOfContext();
+        SchedulingAndChageOfContext();
 
         NVIC_EnableIRQ(SysTick_IRQn);
     }
@@ -313,7 +317,7 @@ __attribute__((weak)) void OS_KERNEL_IdleTask(void) {
 }
 
 void OS_KERNEL_PortYield(void) {
-    AsyncChangeOfContext();
+    SchedulingAndChageOfContext();
 }
 
 /* ================ Private functions implementation ================ */
@@ -326,7 +330,7 @@ void OS_KERNEL_PortYield(void) {
  * @return Return stack pointer of new task to execute.
  */
 static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
-    // Storage last stack pointer used on current task and change state to ready.
+    // Storage last stack pointer used on current task.
     if (os_kernel.current_task != NULL) {
         os_kernel.current_task->stack_pointer  = current_stack_pointer;
     }
@@ -339,9 +343,7 @@ static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
 }
 
 /**
- * @brief Get the task that must be run.
- *
- * @return Returns true if a new task to be executed.
+ * @brief Scheduler of the kernel that choose next task to be running.
  */
 static void Scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
@@ -383,19 +385,17 @@ __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task) {
     }
 }
 
-__STATIC_FORCEINLINE void AsyncChangeOfContext(void) {
+__STATIC_FORCEINLINE void SchedulingAndChageOfContext(void) {
     Scheduler();
     /*
      * Set up bit corresponding exception PendSV
      */
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-
     /*
      * Instruction Synchronization Barrier; flushes the pipeline and ensures that
      * all previous instructions are completed before executing new instructions
      */
     __ISB();
-
     /*
      * Data Synchronization Barrier; ensures that all memory accesses are
      * completed before next instruction is executed
@@ -430,28 +430,18 @@ void OS_METHODS_InterruptState(bool status) {
 
 /* ========== Processor Interruption and Exception Handlers ========= */
 
+/**
+ * @brief Count os ticks and call scheduler for posible change of context.
+ */
 void SysTick_Handler(void) {
     os_kernel.sys_tick++;
-    Scheduler();
     OS_KERNEL_SysTickHook();
-    /*
-     * Set up bit corresponding exception PendSV
-     */
-    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-
-    /*
-     * Instruction Synchronization Barrier; flushes the pipeline and ensures that
-     * all previous instructions are completed before executing new instructions
-     */
-    __ISB();
-
-    /*
-     * Data Synchronization Barrier; ensures that all memory accesses are
-     * completed before next instruction is executed
-     */
-    __DSB();
+    SchedulingAndChageOfContext();
 }
 
+/**
+ * @brief Perform change of context moving the msp. also push and pop to the stack all necessary information to preserve both context.
+ */
 __attribute__ ((naked)) void PendSV_Handler(void) {
     __ASM volatile ("tst lr, 0x10");
     __ASM volatile ("it eq");
@@ -461,11 +451,11 @@ __attribute__ ((naked)) void PendSV_Handler(void) {
     __ASM volatile ("mrs r0, msp");
     __ASM volatile ("bl %0" :: "i" (ChangeOfContext));
     __ASM volatile ("msr msp, r0");
-    __ASM volatile ("pop {r4-r11, lr}");     //Recuperados todos los valores de registros
+    __ASM volatile ("pop {r4-r11, lr}");     // All values from records retrieved.
 
     __ASM volatile ("tst lr,0x10");
     __ASM volatile ("it eq");
     __ASM volatile ("vpopeq {s16-s31}");
-    /* Se hace un branch indirect con el valor de LR que es nuevamente EXEC_RETURN */
+    /* An indirect branch is performed with the value of LR, which is once again EXEC_RETURN */
     __ASM volatile ("bx lr");
 }

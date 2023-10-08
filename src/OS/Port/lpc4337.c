@@ -2,10 +2,16 @@
 #include "os_arch_headers.h"
 #ifdef LPC4337
 
-#include "lpc4337.h"
+#include "os_irq.h"
 
+/* ======================= Private data type ======================== */
 
-/* Handler interrupt */
+/* ================== Private variables declaration ================= */
+
+/* ================== Private functions declaration ================= */
+
+/* ================= Public functions implementation ================ */
+
 void DAC_IRQHandler(void) {
     OS_IRQ_Handler(DAC_IRQn);
 }

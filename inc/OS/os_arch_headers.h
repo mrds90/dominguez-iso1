@@ -1,11 +1,11 @@
 /**
  * @file os_arch_headers.h
  * @author Marcos Dominguez
- * @brief
+ * 
+ * @brief Port for supported architectures.
+ * 
  * @version 0.1
  * @date 2023-09-24
- *
- *
  */
 
 #ifndef __OS_ARCH_HEADERS_H
@@ -25,6 +25,7 @@
 #endif
 
 #include "cmsis_gcc.h"
+
 /* =========[Definition of public macros] =========================================== */
 
 /* =========[Definition of public data types] ======================================= */

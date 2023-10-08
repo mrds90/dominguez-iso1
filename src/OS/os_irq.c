@@ -1,7 +1,24 @@
 #include "os_irq.h"
 #include "os_methods.h"
 
-os_irq_t irq_vector[IRQ_NUMBER] = {0};
+/* ======================= Private data type ======================== */
+
+/**
+ * @brief Hold handler and context variable for each IRQ.
+ */
+typedef struct {
+    IRQHandler handler;                     ///< Function served by the IRQ.
+    void *data;                             ///< Data that is passed to the function that services the IRQ.
+} os_irq_t;
+
+
+/* ================== Private variables declaration ================= */
+
+os_irq_t irq_vector[IRQ_NUMBER] = {0};      ///< Hold handler to be executed and context for each possible IRQ.
+
+/* ================== Private functions declaration ================= */
+
+/* ================= Public functions implementation ================ */
 
 bool OS_IRQ_SetIRQ(os_irq_n_t irq_type, IRQHandler function, void *data) {
     bool ret = false;

@@ -4,15 +4,13 @@
  * @brief
  * @version 0.1
  * @date 2023-10-03
- *
- *
  */
 
 #include <string.h>
 
 #include "os_queue.h"
-#include "delay.h"
 #include "os_methods.h"
+
 /* ==================== Define private variables ==================== */
 
 /* ================== Private variables declaration ================= */

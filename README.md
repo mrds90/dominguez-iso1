@@ -19,6 +19,11 @@ Generate and open documentation running generate_docs script.
 ./generate_docs.sh
 
 ```
+## Architectures supported
+
+The project support the following architectures:
+- LPC4337 (the define ```ARCH_NXP_LPC_43XX``` must be set as global in the project).
+- STM32F429 (the define ```ARCH_STM_32_F4XX``` must be set as global in the project).
 
 ## Task API
 Kernel header from OSAL must be included:
@@ -26,27 +31,33 @@ Kernel header from OSAL must be included:
 #include "osKernel.h"
 ```
 ### Create Task
-The system allow create up to ```MAX_NUMBER_TASK``` using the method ```osTaskCreate```. The system is able to create Task in all the life of the app.
+The system allow create up to ```MAX_NUMBER_TASK``` using the method ```osTaskCreate```. The system is able to create Tasks in all the life of the app.
 
 
 ### Delay
 ```
 #include "osKernel.h"
 ```
-Delay API block the task for the TICK chosen in the argument when ```osDelay``` method is called.
+Delay API block the task for the TICK chosen in the argument when ```osDelay``` method is called. At interrupt context delays
+will be ignored.
 
 ## Semaphores API
 ```
 #include "osSemaphore.h"
 ```
 Counter semaphores are supported without timeout. A semaphore taken will lock forever a task or until another task give the semaphore.
-For a more complete tool check doxy documentation of ```os_semaphore.h```
+For a more complete tool check doxy documentation of ```os_semaphore.h```.
 
 ## Queue API
 ```
 #include "osQueue.h"
 ```
-Queue are supported with timeout. A queue will lock a task for time chosen if is full (at sending) or empty (at receiving), except another task do the oposite action before the timeout. The size of each queue is defined by ```MAX_SIZE_QUEUE``` and is only possible to choose the size of the element.
+### Features
+- Queue are supported with timeout. 
+- A queue will lock a task for time chosen if is full (at sending) or empty (at receiving), except another task do the oposite action before the timeout. 
+- The size of each queue is defined by ```MAX_SIZE_QUEUE``` and is only possible to choose the size of the element. 
+- Any timeout will be ignored at interrupt context, so if the operation can't be done the interrupt will continue the following operation.
+- The queue API report if the Send/Receive action has completed successfully in any context.
 
 For a more complete tool check doxy documentation of ```os_queue.h```.
 

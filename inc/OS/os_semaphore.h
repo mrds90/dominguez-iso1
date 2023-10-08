@@ -1,37 +1,39 @@
 /**
  * @file semaphore.h
  * @author Marcos Dominguez
+ * 
  * @brief Semaphore class.
+ * 
  * @version 0.1
  * @date 2023-09-28
- *
- *
  */
 
 #ifndef __OS_SEMAPHORE_H
 #define __OS_SEMAPHORE_H
 
 #include "os_queue.h"
+
 /* =========[Definition of public macros] =========================================== */
+
 #define SEMPH_COUNTS(counts)      (counts > MAX_SEMPH_COUNT ? MAX_SEMPH_COUNT : (counts == 0 ? 1 : counts))  ///< keep max count range within 1 and MAX_SEMPH_COUNT
+
 /* =========[Definition of public data types] ======================================= */
 
 /**
- * @brief semaphore struct that manage class atributes
- * 
+ * @brief Semaphore class atributes.
  */
 typedef struct {
-    uint8_t mem_buffer[MAX_SEMPH_COUNT];    ///< buffer that storage semaphore counting
-    queue_t semaphore;                      ///< queue object
-    uint8_t data;                           ///< empty data to copy in queue logic.
-} semaphore_t;
+    uint8_t mem_buffer[MAX_SEMPH_COUNT];    ///< Buffer that storage semaphore counting.
+    queue_t semaphore;                      ///< Queue object.
+    uint8_t data;                           ///< Empty data to copy in queue logic.
+} semaphore_t;                              
 
 /* =========[Definition of public methods]========================================== */
 
 /**
  * @brief Initializes semaphore binary or not.
  *
- * @param[in,out]   semaphore   Semaphore handler.
+ * @param[in,out]   semph_ptr   Pointer to semaphore handler.
  * @param[in]       maxCount    Maximum count value that can be reached.
  * @param[in]       count       The count value assigned to the semaphore when it is created.
  */
@@ -40,7 +42,7 @@ typedef struct {
 /**
  * @brief Give semaphore.
  *
- * @param[in,out]   semaphore   Semaphore handler.
+ * @param[in,out]   semph_ptr   Pointer to semaphore handler.
  * @return Returns true if the semaphore has been given in this instance.
  * 
  */
@@ -50,7 +52,7 @@ typedef struct {
 /**
  * @brief Take semaphore.
  *
- * @param[in,out]   semaphore   Semaphore handler.
+ * @param[in,out]   semph_ptr   Pointer to semaphore handler.
  * @param[in,out]   wait_time   Tick to wait until semaphore fail.
  *
  * @return Returns true if the semaphore could be taken.

@@ -1,3 +1,13 @@
+/**
+ * @file lpc4337.h
+ * @author Marcos Dominguez
+ *
+ * @brief Port for lpc4377 architecture. 
+ * 
+ * @version 0.1
+ * @date 2023-10-08
+ */
+
 #ifndef INC_LPC4337_H_
 #define INC_LPC4337_H_
 
@@ -7,27 +17,14 @@
 
 #include "cmsis_43xx.h"
 
-#define IRQ_NUMBER      53                  /* Number of interrupts supported by the MCU */
+/* =========[Definition of public macros] =========================================== */
 
-typedef LPC43XX_IRQn_Type   os_irq_n_t;     /* LPC43XX interrupt number definition */
-typedef void (*IRQHandler)(void* data);     /* Protorype of function */
+#define IRQ_NUMBER      53                  ///< Number of interrupts supported by the MCU.
 
-// Data type of IRQ vector.
-typedef struct
-{
-	IRQHandler  handler;    // Function served by the IRQ.
-	void*       data;		// Data that is passed to the function that services the IRQ.
-}os_irq_t;
+/* =========[Definition of public data types] ======================================= */
 
+typedef LPC43XX_IRQn_Type os_irq_n_t;       ///< LPC43XX interrupt number definition.
 
-/**
- * @brief Function used to execute the interrupt logic and
- * clear the interrupt trigger bit.
- *
- * @param[in]	irqType		IRQ number on the interrupts vector.
- */
-void OS_IRQ_Handler(os_irq_n_t irq_type);
+#endif
 
-#endif // LPC4337
 #endif // INC_LPC4337_H_
-

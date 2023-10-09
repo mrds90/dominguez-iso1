@@ -48,4 +48,5 @@ void OS_IRQ_Handler(os_irq_n_t irq_type) {
         irq_vector[irq_type].handler(irq_vector[irq_type].data);
     }
     OS_METHODS_InterruptState(false);
+    NVIC_ClearPendingIRQ(irq_type);
 }

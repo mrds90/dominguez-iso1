@@ -43,10 +43,10 @@ bool OS_IRQ_ClearIRQ(os_irq_n_t irq_type) {
 }
 
 void OS_IRQ_Handler(os_irq_n_t irq_type) {
-    OS_METHODS_InterruptState(true);
+    OS_METHODS_SetInterruptState(true);
     if (irq_vector[irq_type].handler != NULL) {
         irq_vector[irq_type].handler(irq_vector[irq_type].data);
     }
-    OS_METHODS_InterruptState(false);
+    OS_METHODS_SetInterruptState(false);
     NVIC_ClearPendingIRQ(irq_type);
 }

@@ -38,6 +38,14 @@ os_task_t*OS_METHODS_GetCurrentTask(void);
  * 
  * @param status true: Set - false: Clear.
  */
-void OS_METHODS_InterruptState(bool status);
+void OS_METHODS_SetInterruptState(bool status);
+
+/**
+ * @brief Report if kernel is interrupted.
+ * 
+ * @return true     Interrupted.
+ * @return false    Not interrupted.
+ */
+bool OS_METHODS_GetInterruptState(void);
 
 #endif /* __OS_METHODS_H */

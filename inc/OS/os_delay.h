@@ -28,13 +28,15 @@
  */
 __STATIC_FORCEINLINE void OS_DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
     if (task != NULL) {
-        if ((OS_MAX_DELAY - delay_time) <=  OS_KERNEL_GetTickCount()) { // if wake up time will be higher than OS_MAX_DELAY so set OS_MAX_DELAY as delay.
+        if (((OS_MAX_DELAY - delay_time) <=  OS_KERNEL_GetTickCount()) || (delay_time > OS_MAX_DELAY)) { // if wake up time will be higher than OS_MAX_DELAY so set OS_MAX_DELAY as delay.
             task->wake_up_time = OS_MAX_DELAY;
         }
         else {
             task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
         }
-        task->status = OS_TASK_BLOCK;
+        if (task->status == OS_TASK_RUNNING) {
+            task->status = OS_TASK_BLOCK;
+        }
     }
 }
 

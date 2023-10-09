@@ -74,7 +74,6 @@ typedef struct {
     os_error_t last_error;                                                ///< Last error reported at os.
 } os_kernel_t;
 
-
 /* ================== Private variables declaration ================= */
 
 static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< FIFOs that hold the task by priority.
@@ -298,7 +297,6 @@ void OS_KERNEL_Start(void) {
 
     NVIC_EnableIRQ(PendSV_IRQn);
     NVIC_EnableIRQ(SysTick_IRQn);
-
 }
 
 tick_type_t OS_KERNEL_GetTickCount(void) {
@@ -306,7 +304,7 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
 }
 
 void OS_KERNEL_Delay(const tick_type_t tick) {
-    if ((tick > 0) && (os_kernel.status == OS_STATUS_RUNNING)) {
+    if (((tick > 0) || (tick == OS_MAX_DELAY)) && (os_kernel.status == OS_STATUS_RUNNING)) {
         NVIC_DisableIRQ(SysTick_IRQn);
 
         OS_DELAY_SetDelay(tick, os_kernel.current_task);
@@ -445,7 +443,7 @@ os_task_t*OS_METHODS_GetCurrentTask(void) {
     return os_kernel.current_task;
 }
 
-void OS_METHODS_InterruptState(bool status) {
+void OS_METHODS_SetInterruptState(bool status) {
     static os_status_t status_history[IRQ_NUMBER];
     static os_status_t *status_history_ptr = status_history;
     if (status) {
@@ -457,6 +455,14 @@ void OS_METHODS_InterruptState(bool status) {
         status_history_ptr--;
         os_kernel.status = *status_history_ptr;
     }
+}
+
+bool OS_METHODS_GetInterruptState(void) {
+    bool ret = false;
+    if (os_kernel.status == OS_STATUS_INTERRUPTED) {
+        ret = true;
+    }
+    return ret;
 }
 
 /* ========== Processor Interruption and Exception Handlers ========= */

@@ -44,9 +44,9 @@ bool OS_QUEUE_Create(queue_t *queue_obj, queue_mem_t queue_store_ptr, uint8_t da
 bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeout) {
     bool ret = false;
     if ((queue_obj != NULL) && (data != NULL)) {
-        if (queue_obj->used_elements >= queue_obj->n_elements) {
+        if ((queue_obj->used_elements >= queue_obj->n_elements) && !OS_METHODS_GetInterruptState()) {
+            OS_KERNEL_EnterCritical();
             os_task_t *current_task = OS_METHODS_GetCurrentTask();
-            current_task->status = OS_TASK_BLOCK;
             *queue_obj->push_task = current_task;
 
             queue_obj->push_task++;
@@ -54,6 +54,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
                 queue_obj->push_task = queue_obj->task_list;
             }
             OS_KERNEL_Delay(timeout);
+            OS_KERNEL_ExitCritical();
         }
         if (queue_obj->used_elements < queue_obj->n_elements) {
             memcpy(queue_obj->push_element, data, queue_obj->data_size);
@@ -83,16 +84,16 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
 bool OS_QUEUE_Receive(queue_t *queue_obj, void *data, const tick_type_t timeout) {
     bool ret = false;
     if ((queue_obj != NULL) && (data != NULL)) {
-        if (queue_obj->used_elements == 0) {
+        if ((queue_obj->used_elements == 0) && !OS_METHODS_GetInterruptState()) {
+            OS_KERNEL_EnterCritical();
             os_task_t *current_task = OS_METHODS_GetCurrentTask();
-            current_task->status = OS_TASK_BLOCK;
             *queue_obj->push_task = current_task;
-
             queue_obj->push_task++;
             if (queue_obj->push_task == &queue_obj->task_list[MAX_NUMBER_TASK]) {
                 queue_obj->push_task = queue_obj->task_list;
             }
             OS_KERNEL_Delay(timeout);
+            OS_KERNEL_ExitCritical();
         }
         if ((queue_obj->used_elements > 0) && (data != NULL)) {
             memcpy(data, queue_obj->pop_element, queue_obj->data_size);

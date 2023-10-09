@@ -18,7 +18,7 @@
 /* =========[Definition of public macros] =========================================== */
 
 #define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))     ///< Defines maximum stack size for a task.
-#define MAX_DELAY               0xFFFFFFFFFFFFFFFFUL                    ///< Used to wait forever.
+#define OS_MAX_DELAY            0xFFFFFFFFFFFFFFFFUL                    ///< Macro defining an infinite delay for waiting forever.
 #define SET_PRIORITY(x)         (((uint32_t)(x) >= PRIORITY_LEVELS) ? priority_map[PRIORITY_LEVELS - 1] : priority_map[x]) ///< Safe way to set priority
 
 /* =========[Definition of public data types] ======================================= */

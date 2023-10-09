@@ -5,7 +5,7 @@
         "osarchheaders.h": "c",
         "sapi.h": "c",
         "stddef.h": "c",
-        "delay.h": "c",
+        "os_delay.h": "c",
         "stdbool.h": "c",
         "cmsis.h": "c",
         "os_arch_headers.h": "c",

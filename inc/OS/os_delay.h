@@ -1,5 +1,5 @@
 /**
- * @file delay.h
+ * @file os_delay.h
  * @author Marcos Dominguez
  *
  * @brief Delay methods for the kernel (only used by the kernel).
@@ -8,8 +8,8 @@
  * @date 2023-09-23
  */
 
-#ifndef __DELAY_H
-#define __DELAY_H
+#ifndef __OS_DELAY_H
+#define __OS_DELAY_H
 
 #include "os_kernel.h"
 #include "os_arch_headers.h"
@@ -26,10 +26,10 @@
  * @param wake_up_time  Time to be blocked.
  * @param task          Task to be blocked.
  */
-__STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
+__STATIC_FORCEINLINE void OS_DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
     if (task != NULL) {
-        if ((MAX_DELAY - delay_time) <=  OS_KERNEL_GetTickCount()) { // if wake up time will be higher than MAX_DELAY so set MAX_DELAY as delay.
-            task->wake_up_time = MAX_DELAY;
+        if ((OS_MAX_DELAY - delay_time) <=  OS_KERNEL_GetTickCount()) { // if wake up time will be higher than OS_MAX_DELAY so set OS_MAX_DELAY as delay.
+            task->wake_up_time = OS_MAX_DELAY;
         }
         else {
             task->wake_up_time = delay_time + OS_KERNEL_GetTickCount();
@@ -43,9 +43,9 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
  *
  * @param task  Task to check if is ready or blocked.
  */
-__STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
+__STATIC_FORCEINLINE bool OS_DELAY_EvalDelay(os_task_t *task) {
     bool ret = false;
-    if (task != NULL && (task->wake_up_time != MAX_DELAY)) {
+    if (task != NULL && (task->wake_up_time != OS_MAX_DELAY)) {
         if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
             ret = true;
         }
@@ -53,4 +53,4 @@ __STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
     return ret;
 }
 
-#endif /* __DELAY_H */
+#endif /* __OS_DELAY_H */

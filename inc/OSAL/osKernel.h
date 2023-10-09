@@ -11,11 +11,11 @@
 #ifndef INC_OSKERNEL_H_
 #define INC_OSKERNEL_H_
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "os_kernel.h"
 
 /* =========[Definition of public macros] =========================================== */
+
+#define MAX_DELAY OS_MAX_DELAY              ///< Macro defining an infinite delay for waiting forever.
 
 /* =========[Definition of public data types] ======================================= */
 

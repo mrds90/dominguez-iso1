@@ -38,7 +38,7 @@ typedef semaphore_t osSemaphoreObject; ///< Attributes of semaphore class.
  *
  * @return Returns true if the semaphore could be taken.
  */
-#define osSemaphoreTake(semaphore)                  OS_SEMAPHORE_Take((osSemaphoreObject *) semaphore, MAX_DELAY)
+#define osSemaphoreTake(semaphore)                  OS_SEMAPHORE_Take((osSemaphoreObject *) semaphore, OS_MAX_DELAY)
 
 /**
  * @brief Give semaphore.

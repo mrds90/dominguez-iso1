@@ -3,7 +3,7 @@
 
 #include "os_arch_headers.h"
 #include "os_kernel.h"
-#include "delay.h"
+#include "os_delay.h"
 #include "os_methods.h"
 #include "os_irq.h"
 
@@ -309,7 +309,7 @@ void OS_KERNEL_Delay(const tick_type_t tick) {
     if ((tick > 0) && (os_kernel.status == OS_STATUS_RUNNING)) {
         NVIC_DisableIRQ(SysTick_IRQn);
 
-        DELAY_SetDelay(tick, os_kernel.current_task);
+        OS_DELAY_SetDelay(tick, os_kernel.current_task);
 
         SchedulingAndChageOfContext();
 
@@ -378,7 +378,7 @@ static uint32_t ChangeOfContext(uint32_t current_stack_pointer) {
  */
 static void Scheduler(void) {
     for (uint8_t i = 0; i < MAX_NUMBER_TASK; i++) {
-        if (DELAY_EvalDelay(os_kernel.list_task[i])) {
+        if (OS_DELAY_EvalDelay(os_kernel.list_task[i])) {
             os_kernel.list_task[i]->status = OS_TASK_READY;
             PushTaskToWaitingList(os_kernel.list_task[i]);
         }

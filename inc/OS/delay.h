@@ -28,7 +28,7 @@
  */
 __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task) {
     if (task != NULL) {
-        if (delay_time == MAX_DELAY) {
+        if ((MAX_DELAY - delay_time) <=  OS_KERNEL_GetTickCount()) { // if wake up time will be higher than MAX_DELAY so set MAX_DELAY as delay.
             task->wake_up_time = MAX_DELAY;
         }
         else {
@@ -45,7 +45,7 @@ __STATIC_FORCEINLINE void DELAY_SetDelay(tick_type_t delay_time, os_task_t *task
  */
 __STATIC_FORCEINLINE bool DELAY_EvalDelay(os_task_t *task) {
     bool ret = false;
-    if (task != NULL) {
+    if (task != NULL && (task->wake_up_time != MAX_DELAY)) {
         if ((OS_KERNEL_GetTickCount() >= task->wake_up_time) && (task->status == OS_TASK_BLOCK)) {
             ret = true;
         }

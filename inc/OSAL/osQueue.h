@@ -15,7 +15,7 @@
 
 /* =========[Definition of public macros] =========================================== */
 
-#define MAX_SIZE_QUEUE  128                 ///< Maximum buffer size of the queue
+#define MAX_SIZE_QUEUE  128                 ///< Maximum buffer size of the queue.
 
 /* =========[Definition of public data types] ======================================= */
 

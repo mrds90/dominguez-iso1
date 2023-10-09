@@ -177,7 +177,7 @@ void OS_KERNEL_ErrorHook(void *caller);
 void OS_KERNEL_IdleTask(void);
 
 /**
- * @brief Method to make an async change of context
+ * @brief Method to make an async change of context.
  */
 void OS_KERNEL_PortYield(void);
 

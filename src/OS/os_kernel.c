@@ -36,7 +36,6 @@
 
 /**
  * @brief Possible states of the kernel.
- *
  */
 typedef enum {
     OS_STATUS_RESET,            ///< Kernel not started.
@@ -51,14 +50,15 @@ typedef enum {
     OS_ERROR_TASK_CREATE,
     OS_ERROR_TASK_SUSPEND,
     OS_ERROR_TASK_RESUME,
+    OS_ERROR_NULL_HANDLER,
 } os_error_t;
 
 /**
- * @brief Hold the pointers of the fifos for each priority.
+ * @brief Hold the pointers of the FIFOs for each priority.
  */
 typedef struct {
-    os_task_t **pop_ptr;        ///< point the next fifo address where an element will be popped.
-    os_task_t **push_ptr;       ///< point fifo address available for pushing.
+    os_task_t **pop_ptr;        ///< Point the next FIFO address where an element will be popped.
+    os_task_t **push_ptr;       ///< Point FIFO address available for pushing.
 } fifo_task_t;
 
 /**
@@ -71,12 +71,13 @@ typedef struct {
     fifo_task_t task_fifo[OS_KERNEL_PRIORITY_QTY];                        ///< Pointer to FIFOs with task by priority.
     tick_type_t sys_tick;                                                 ///< Tick count of the system.
     os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted.
-    os_error_t last_error;                                                ///< Last error reported at os.
+    os_error_t last_error;                                                ///< Last error reported at OS.
+    bool high_priority_task_woken;                                        ///< True if a task with a higher priority than the current one has awakened.
 } os_kernel_t;
 
 /* ================== Private variables declaration ================= */
 
-static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];          ///< FIFOs that hold the task by priority.
+static os_task_t *fifo_task[OS_KERNEL_PRIORITY_QTY][MAX_NUMBER_TASK];     ///< FIFOs that hold the task by priority.
 
 /**
  * @brief Atributes values of os kernel object.
@@ -303,7 +304,7 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
-void OS_KERNEL_Delay(const tick_type_t tick) {
+void                                                                                          OS_KERNEL_Delay(const tick_type_t tick) {
     if (((tick > 0) || (tick == OS_MAX_DELAY)) && (os_kernel.status == OS_STATUS_RUNNING)) {
         NVIC_DisableIRQ(SysTick_IRQn);
 
@@ -316,7 +317,9 @@ void OS_KERNEL_Delay(const tick_type_t tick) {
 }
 
 void OS_KERNEL_PortYield(void) {
-    SchedulingAndChageOfContext();
+    if (os_kernel.status == OS_STATUS_RUNNING) {
+        SchedulingAndChageOfContext();
+    }
 }
 
 void OS_KERNEL_EnterCritical(void) {
@@ -416,6 +419,8 @@ __STATIC_FORCEINLINE void PushTaskToWaitingList(os_task_t *task) {
 
 __STATIC_FORCEINLINE void SchedulingAndChageOfContext(void) {
     Scheduler();
+    os_kernel.high_priority_task_woken = false;
+
     /*
      * Set up bit corresponding exception PendSV
      */
@@ -433,14 +438,26 @@ __STATIC_FORCEINLINE void SchedulingAndChageOfContext(void) {
 }
 
 void OS_METHODS_SetTaskAsReady(os_task_t *handler) {
-    if (handler->status != OS_TASK_READY) {
-        handler->status = OS_TASK_READY;
-        PushTaskToWaitingList(handler);
+    if (handler != NULL) {
+        if (handler->status != OS_TASK_READY) {
+            handler->status = OS_TASK_READY;
+            PushTaskToWaitingList(handler);
+        }
+        if (handler->priority > os_kernel.current_task->priority) {
+            os_kernel.high_priority_task_woken = true;
+        }
+    }
+    else {
+        os_kernel.last_error = OS_ERROR_NULL_HANDLER;
     }
 }
 
 os_task_t*OS_METHODS_GetCurrentTask(void) {
     return os_kernel.current_task;
+}
+
+bool OS_METHODS_GetYieldNeed(void) {
+    return os_kernel.high_priority_task_woken;
 }
 
 void OS_METHODS_SetInterruptState(bool status) {

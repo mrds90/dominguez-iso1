@@ -20,7 +20,7 @@
 /* =========[Definition of public methods]========================================== */
 
 /**
- * @brief Set task as ready and push in fifo to be checked by scheduler.
+ * @brief Set task as ready and push in FIFO to be checked by scheduler.
  *
  * @param handler   Pointer pointing to the task object that is going to be set as ready.
  */
@@ -47,5 +47,13 @@ void OS_METHODS_SetInterruptState(bool status);
  * @return false    Not interrupted.
  */
 bool OS_METHODS_GetInterruptState(void);
+
+/**
+ * @brief Ask if it is necessary to change the context.
+ * 
+ * @return true: Change of context needed.
+ * @return false: Change of context not needed.
+ */
+bool OS_METHODS_GetYieldNeed(void);
 
 #endif /* __OS_METHODS_H */

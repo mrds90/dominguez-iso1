@@ -71,9 +71,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
                     queue_obj->pop_task = queue_obj->task_list;
                 }
                 OS_METHODS_SetTaskAsReady(task_handler);
-                if (task_handler->priority > OS_METHODS_GetCurrentTask()->priority) {
-                    OS_KERNEL_PortYield();
-                }
+                OS_KERNEL_PortYield();
             }
             ret = true;
         }
@@ -110,9 +108,7 @@ bool OS_QUEUE_Receive(queue_t *queue_obj, void *data, const tick_type_t timeout)
                     queue_obj->pop_task = queue_obj->task_list;
                 }
                 OS_METHODS_SetTaskAsReady(task_handler);
-                if (task_handler->priority > OS_METHODS_GetCurrentTask()->priority) {
-                    OS_KERNEL_PortYield();
-                }
+                OS_KERNEL_PortYield();
             }
             ret = true;
         }

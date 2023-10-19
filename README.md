@@ -9,7 +9,7 @@ Static Operating System running in Cortex M4F
 | Hardware IRQ Management            |                               | Supported for 2 devices.                           |
 | Kernel Control Structure           | Last Error                    | Reports 4 errors.                                  |
 |                                    | Operating System State        | Supports 3 states.                                 |
-|                                    | Scheduling Flag               | Not needed - automatically detected in each API.   |
+|                                    | Scheduling Flag               | Supported                                          |
 |                                    | Task Pointers                 | Supported.                                         |
 | Task Control Structure             | Task Fields                   | Supported.                                         |
 |                                    | Optional: ID Number and Name  | Supports ID numbers, but not names.                |

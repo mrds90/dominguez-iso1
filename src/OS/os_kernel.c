@@ -72,7 +72,7 @@ typedef struct {
     tick_type_t sys_tick;                                                 ///< Tick count of the system.
     os_status_t status;                                                   ///< Reset (Not started) - Running - Interrupted.
     os_error_t last_error;                                                ///< Last error reported at OS.
-    bool high_priority_task_woken;                                        ///< True if a task with a higher priority than the current one has awakened.
+    bool high_priority_task_woken;                                        ///< True if a task with a higher priority than the current one has been awakened.
 } os_kernel_t;
 
 /* ================== Private variables declaration ================= */
@@ -86,6 +86,7 @@ static os_kernel_t os_kernel = {.list_task[0 ... (MAX_NUMBER_TASK - 1)] = NULL,
                                 .current_task = NULL,
                                 .sys_tick = 0,
                                 .status = OS_STATUS_RESET,
+                                .high_priority_task_woken = false,
                                 .task_fifo = {
                                     [OS_KERNEL_LOW_PRIORITY] = {
                                         .pop_ptr = fifo_task[OS_KERNEL_LOW_PRIORITY],

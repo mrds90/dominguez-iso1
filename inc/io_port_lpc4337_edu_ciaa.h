@@ -1,22 +1,26 @@
-/*=============================================================================
- * Copyright (c) 2021, Franco Bucafusco <franco_bucafusco@yahoo.com.ar>
- * 					   Martin N. Menendez <mmenendez@fi.uba.ar>
- * All rights reserved.
- * License: Free
- * Date: 2021/10/03
- * Version: v1.2
- *===========================================================================*/
+/**
+ * @file io_port_lpc4337_edu_ciaa.h
+ * @author Marcos Dominguez
+ *
+ * @brief GPIO Interrupt HAL for lpc4377
+ *
+ * @version 0.1
+ * @date 2023-10-19
+ */
 
 #ifndef KEYS_H_
 #define KEYS_H_
 
-/* public macros ================================================================= */
 
+/* ========= [Definition of public macros] =========================================== */
 
-/* types ================================================================= */
+/* ========= [Definition of public data types] ======================================= */
 
-/* methods ================================================================= */
+/* ========= [Definition of public methods] ========================================== */
+
+/**
+ *  @brief Driver Init
+ */
 void KEYS_Init(void);
 
-
-#endif /* PDM_ANTIRREBOTE_MEF_INC_DEBOUNCE_H_ */
+#endif /* KEYS_H_ */

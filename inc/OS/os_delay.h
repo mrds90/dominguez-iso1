@@ -14,11 +14,11 @@
 #include "os_kernel.h"
 #include "os_arch_headers.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Block task until the wake up time.

@@ -15,11 +15,11 @@
 
 #include "stm32f429xx.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define IRQ_NUMBER      91                  ///< Number of interrupts supported by the MCU.
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef IRQn_Type os_irq_n_t;               ///< STM32F4XX interrupt number definition.
 

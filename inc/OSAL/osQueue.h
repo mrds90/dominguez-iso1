@@ -13,11 +13,11 @@
 
 #include "os_queue.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define MAX_SIZE_QUEUE  128                 ///< Maximum buffer size of the queue.
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 /**
  * @brief Atributes of the queue class.
@@ -28,7 +28,7 @@ typedef struct
     queue_t queue;                          ///< Kernel queue atributes.
 } osQueueObject;                            
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Initialize the queue.

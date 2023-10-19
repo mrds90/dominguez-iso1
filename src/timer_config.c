@@ -5,7 +5,7 @@
 #include "cmsis_gcc.h"
 #include "chip.h"
 #include "timer_18xx_43xx.h"
-/*==================[macros and definitions]=================================*/
+/*================== [macros and definitions] =================================*/
 #define TMR0  (0)
 #define TMR1  (1)
 #define TMR2  (2)
@@ -19,7 +19,7 @@
 #define TICKS_TO_US(ticks)              (ticks  * 1000000 / (LPC4337_MAX_FREC))
 #define US_0_1_TO_TICKS(uS01)           (uS01 * (LPC4337_MAX_FREC / 10000000))
 
-/*=====[Definitions of private data type]==============================*/
+/*=====[Definitions of private data type] ==============================*/
 typedef void (*callBackFuncPtr_t)(void *);
 
 typedef struct {
@@ -39,7 +39,7 @@ typedef enum {
     TIMERCOMPAREMATCH3
 } timerCompareMatch_t;
 
-/*=====[Implementation of private methods]===================================*/
+/*=====[Implementation of private methods] ===================================*/
 
 /* Causes:
  * User forgot to initialize the functions for the compare match interrupt on Timer_init call
@@ -52,9 +52,9 @@ static void doNothing(void *ptr) {}
 
 void TIMER_IRQHandler(void *not_used);
 
-/*=====[Definitions of extern global variables]==============================*/
+/*=====[Definitions of extern global variables] ==============================*/
 
-/*=====[Definitions of public global variables]==============================*/
+/*=====[Definitions of public global variables] ==============================*/
 
 static const timerStaticData_t timer_sd[4] = {
     {LPC_TIMER0, RGU_TIMER0_RST, TIMER0_IRQn},
@@ -73,16 +73,16 @@ static timerDinamicData_t timer_dd[4] = {
 };
 
 
-/*=====[Main function, program entry point after power on or reset]==========*/
+/*=====[Main function, program entry point after power on or reset] ==========*/
 
-/*=====[Implementation of private interrupt functions]=======================*/
+/*=====[Implementation of private interrupt functions] =======================*/
 
 
-/*=====[Prototypes (declarations) of private functions]=======================*/
+/*=====[Prototypes (declarations) of private functions] =======================*/
 
 void Chip_TIMER_Reset(LPC_TIMER_T *pTMR);
 
-/*=====[Implementations of public functions]==================================*/
+/*=====[Implementations of public functions] ==================================*/
 
 void TIMER_CONFIG_Init(uint32_t frequency, void *callback) {
     if (frequency == 0) {

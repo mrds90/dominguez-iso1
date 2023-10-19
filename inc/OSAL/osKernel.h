@@ -13,11 +13,11 @@
 
 #include "os_kernel.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define MAX_DELAY OS_MAX_DELAY              ///< Macro defining an infinite delay for waiting forever.
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef tick_type_t TickType;               ///< Hold tick counts.
 
@@ -42,7 +42,7 @@ typedef enum {
 
 typedef os_task_t osTaskObject;             ///< Task Objects that hold information for the kernel
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Create task.

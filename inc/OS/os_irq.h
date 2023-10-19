@@ -22,13 +22,13 @@
 #include "lpc4337.h"
 #endif
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef void (*IRQHandler)(void *data);     ///< Prototype of IRQ function.
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Function used to execute the interrupt logic and

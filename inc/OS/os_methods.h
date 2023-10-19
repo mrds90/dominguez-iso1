@@ -13,11 +13,11 @@
 
 #include "os_kernel.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Set task as ready and push in FIFO to be checked by scheduler.

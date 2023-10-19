@@ -15,13 +15,13 @@
 #include <stdbool.h>
 #include "os_config.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define MAX_TASK_SIZE           (MAX_STACK_SIZE / sizeof(uint32_t))     ///< Defines maximum stack size for a task.
 #define OS_MAX_DELAY            0xFFFFFFFFFFFFFFFFUL                    ///< Macro defining an infinite delay for waiting forever.
 #define SET_PRIORITY(x)         (((uint32_t)(x) >= PRIORITY_LEVELS) ? priority_map[PRIORITY_LEVELS - 1] : priority_map[x]) ///< Safe way to set priority
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef uint64_t tick_type_t;       ///< Tick data type.
 
@@ -84,7 +84,7 @@ typedef struct {
     tick_type_t wake_up_time;                ///< Time to unblock task if blocked.
 } os_task_t;
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ======================================== */
 
 /**
  *@brief Create task.

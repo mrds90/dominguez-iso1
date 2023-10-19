@@ -14,13 +14,13 @@
 #include <stdbool.h>
 #include "os_irq.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef os_irq_n_t osIRQnType; ///< Generic interrupt number definition.
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Registering the callback in the os interrupt vector and enabling the interrupt.

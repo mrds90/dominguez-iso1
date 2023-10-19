@@ -13,13 +13,13 @@
 
 #include "os_semaphore.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef semaphore_t osSemaphoreObject; ///< Attributes of semaphore class.
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Initializes semaphore binary or not.

@@ -6,25 +6,25 @@
  * @date 2023-10-13
  */
 
-/*==================[ Inclusions ]============================================*/
+/*================== [ Inclusions ] ============================================*/
 #include "chip.h"
 #include "io_port_lpc4337_edu_ciia.h"
 
 
-/*=====[ Definitions of private data types ]===================================*/
+/*=====[ Definitions of private data types ] ===================================*/
 
-/*=====[Definition macros of private constants]==============================*/
+/*=====[Definition macros of private constants] ==============================*/
 
-/*=====[Prototypes (declarations) of private functions]======================*/
+/*=====[Prototypes (declarations) of private functions] ======================*/
 static void KEYS_ISRConfig(void);
 
-/*=====[Definitions of private global variables]=============================*/
+/*=====[Definitions of private global variables] =============================*/
 
-/*=====[Definitions of public global variables]==============================*/
+/*=====[Definitions of public global variables] ==============================*/
 
-/*=====[prototype of private functions]=================================*/
+/*=====[prototype of private functions] =================================*/
 
-/*=====[Implementations of public functions]=================================*/
+/*=====[Implementations of public functions] =================================*/
 
 /**
  *  @brief Driver Init
@@ -33,9 +33,9 @@ void KEYS_Init(void) {
     KEYS_ISRConfig();
 }
 
-/*=====[Implementations of private functions]================================*/
+/*=====[Implementations of private functions] ================================*/
 
-/*=====[Implementations of private functions]=================================*/
+/*=====[Implementations of private functions] =================================*/
 
 /**
  * @brief   Inicializa las interrupciones asociadas al driver keys.c

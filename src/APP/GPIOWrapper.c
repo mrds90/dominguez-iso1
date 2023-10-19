@@ -1,6 +1,23 @@
+/**
+ * @file GPIOWrapper.c
+ * @author Marcos Dominguez
+ * 
+ * @brief EDU-CIAA Hardware abstraction layer for GPIO.
+ * 
+ * @version 0.1
+ * @date 2023-10-19
+ */
+
 #include "GPIOWrapper.h"
 #include "chip.h"
 
+/* ==================== Define private variables ==================== */
+
+/* ================== Private variables declaration ================= */
+
+/* ================== Private functions declaration ================= */
+
+/* ================= Public functions implementation ================ */
 
 bool __HAL_GPIO_EXTI_GET_IT(uint32_t button) {
     uint32_t button_map;

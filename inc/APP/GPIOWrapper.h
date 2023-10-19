@@ -1,10 +1,22 @@
+/**
+ * @file GPIOWrapper.h
+ * @author Marcos Dominguez
+ * 
+ * @brief EDU-CIAA Hardware abstraction layer for GPIO.
+ * 
+ * @version 0.1
+ * @date 2023-10-19
+ */
+
 #ifndef INC_GPIOWRAPPER_H_
 #define INC_GPIOWRAPPER_H_
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifdef ARCH_NXP_LPC_43XX 
+/* ========= [Definition of public macros] =========================================== */
+
+#ifdef ARCH_NXP_LPC_43XX
 #include "sapi.h"
 #endif
 
@@ -33,7 +45,7 @@
 #endif /* B2_EXTI_IRQn */
 
 #ifndef LD3_Pin
-#define LD3_Pin               LED1
+#define LD3_Pin               LED2
 #endif /* LD3_Pin */
 
 #ifndef LD3_GPIO_Port
@@ -57,7 +69,7 @@
 #endif /* LD2_GPIO_Port */
 
 #ifndef LD4_Pin
-#define LD4_Pin               LED2
+#define LD4_Pin               LED1
 #endif /* LD4_Pin */
 
 #ifndef LD4_GPIO_Port
@@ -76,12 +88,37 @@
 #define gpioSetLevel(pin, port, value) gpioWrite((gpioMap_t)pin, (bool)value)
 #endif /* gpioSetLevel */
 
+/* ========= [Definition of public data types] ======================================= */
+
+/* ========= [Definition of public methods] ========================================== */
+
+/**
+ * @brief Get Logic State of am specific pin.
+ *
+ * @param pin
+ * @param port
+ * @return true:  Button raised.
+ * @return false: Button pressed.
+ */
 bool gpioGetLevel(uint16_t pin, uint32_t port);
 
 
-#ifdef ARCH_NXP_LPC_43XX 
+#ifdef ARCH_NXP_LPC_43XX
+/**
+ * @brief Get if the Interrupt flag of an specific button is raised.
+ *
+ * @param button Button to be checked.
+ * @return true: Flag is raised.
+ * @return false: Flag is not raised.
+ */
 bool __HAL_GPIO_EXTI_GET_IT(uint32_t button);
-    
+
+/**
+ * @brief Clear interrupt flag of linked to an specific button.
+ *
+ * @param button Button which interrupt shall be cleared.
+ */
 void __HAL_GPIO_EXTI_CLEAR_IT(uint32_t button);
+
 #endif /* ARCH_NXP_LPC_43XX  */
 #endif /* INC_GPIOWRAPPER_H_ */

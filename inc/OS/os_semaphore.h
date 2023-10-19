@@ -13,11 +13,11 @@
 
 #include "os_queue.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define SEMPH_COUNTS(counts)      (counts > MAX_SEMPH_COUNT ? MAX_SEMPH_COUNT : (counts == 0 ? 1 : counts))  ///< keep max count range within 1 and MAX_SEMPH_COUNT
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 /**
  * @brief Semaphore class atributes.
@@ -28,7 +28,7 @@ typedef struct {
     uint8_t data;                           ///< Empty data to copy in queue logic.
 } semaphore_t;                              
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Initializes semaphore binary or not.

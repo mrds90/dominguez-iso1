@@ -4,7 +4,7 @@
  * Version: 1
  *===========================================================================*/
 
-/*=====[Inclusions of function dependencies]=================================*/
+/*=====[Inclusions of function dependencies] =================================*/
 
 #include "timer_config.h"
 #include "main.h"
@@ -16,7 +16,7 @@
 
 
 #include "sapi.h"
-/*=====[Definition macros of private constants]==============================*/
+/*=====[Definition macros of private constants] ==============================*/
 
 #define SEMAPHORE_TEST  1
 #define QUEUE_TEST      2
@@ -24,9 +24,9 @@
 #define API_TEST        TP_FINAL_TEST
 #define TIMER_RATE      2
 
-/*=====[Definitions of extern global variables]==============================*/
+/*=====[Definitions of extern global variables] ==============================*/
 
-/*=====[Definitions of private methods]======================================*/
+/*=====[Definitions of private methods] ======================================*/
 
 #if (API_TEST != TP_FINAL_TEST)
 
@@ -42,10 +42,10 @@ static void TmrCallback(void);
 
 #endif /* (API_TEST != TP_FINAL_TEST) */
 
-/*=====[Definitions of public global variables]==============================*/
+/*=====[Definitions of public global variables] ==============================*/
 
 
-/*=====[Definitions of private global variables]=============================*/
+/*=====[Definitions of private global variables] =============================*/
 #if (API_TEST != TP_FINAL_TEST)
 static osTaskObject osTask1;
 static osTaskObject osTask2;
@@ -59,7 +59,7 @@ static osQueueObject queue1;
 static osQueueObject queue2;
 #endif
 #endif /* (API_TEST != TP_FINAL_TEST) */
-/*=====[Main function, program entry point after power on or reset]==========*/
+/*=====[Main function, program entry point after power on or reset] ==========*/
 
 
 int main(void) {

@@ -17,11 +17,11 @@
 
 #include "cmsis_43xx.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define IRQ_NUMBER      53                  ///< Number of interrupts supported by the MCU.
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef LPC43XX_IRQn_Type os_irq_n_t;       ///< LPC43XX interrupt number definition.
 

@@ -4,38 +4,38 @@
  * Version: 1
  *===========================================================================*/
 
-/*=====[Avoid multiple inclusion - begin]====================================*/
+/*=====[Avoid multiple inclusion - begin] ====================================*/
 
 #ifndef __DOMINGUEZ_ISO1_H__
 #define __DOMINGUEZ_ISO1_H__
 
-/*=====[Inclusions of public function dependencies]==========================*/
+/*=====[Inclusions of public function dependencies] ==========================*/
 
 #include <stdint.h>
 #include <stddef.h>
 
-/*=====[C++ - begin]=========================================================*/
+/*=====[C++ - begin] =========================================================*/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*=====[Definition macros of public constants]===============================*/
+/*=====[Definition macros of public constants] ===============================*/
 
-/*=====[Public function-like macros]=========================================*/
+/*=====[Public function-like macros] =========================================*/
 
-/*=====[Definitions of public data types]====================================*/
+/*=====[Definitions of public data types] ====================================*/
 
-/*=====[Prototypes (declarations) of public functions]=======================*/
+/*=====[Prototypes (declarations) of public functions] =======================*/
 
-/*=====[Prototypes (declarations) of public interrupt functions]=============*/
+/*=====[Prototypes (declarations) of public interrupt functions] =============*/
 
-/*=====[C++ - end]===========================================================*/
+/*=====[C++ - end] ===========================================================*/
 
 #ifdef __cplusplus
 }
 #endif
 
-/*=====[Avoid multiple inclusion - end]======================================*/
+/*=====[Avoid multiple inclusion - end] ======================================*/
 
 #endif /* __DOMINGUEZ_ISO1_H__ */

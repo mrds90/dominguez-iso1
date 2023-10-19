@@ -13,11 +13,11 @@
 
 #include "os_kernel.h"
 
-/* =========[Definition of public macros] =========================================== */
+/* ========= [Definition of public macros] =========================================== */
 
 #define BYTES_OF_QUEUE(data_size, element_qty) (data_size * element_qty) ///< Bytes used by a queue to storage the data.
 
-/* =========[Definition of public data types] ======================================= */
+/* ========= [Definition of public data types] ======================================= */
 
 typedef uint8_t *queue_mem_t;                   ///< Pointer to queue data region in ram.
 
@@ -36,7 +36,7 @@ typedef struct {
     uint8_t used_elements;                      ///< Elements quantity that has been queued.
 } queue_t;                                      
 
-/* =========[Definition of public methods]========================================== */
+/* ========= [Definition of public methods] ========================================== */
 
 /**
  * @brief Initialize the queue.

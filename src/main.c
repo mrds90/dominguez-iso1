@@ -8,7 +8,7 @@
 
 #include "timer_config.h"
 #include "main.h"
-#include "io_port_lpc4337_edu_ciia.h"
+#include "io_port_lpc4337_edu_ciaa.h"
 #include "application.h"
 #include "osKernel.h"
 #include "osSemaphore.h"

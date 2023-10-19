@@ -8,7 +8,7 @@
 
 /*================== [ Inclusions ] ============================================*/
 #include "chip.h"
-#include "io_port_lpc4337_edu_ciia.h"
+#include "io_port_lpc4337_edu_ciaa.h"
 
 
 /*=====[ Definitions of private data types ] ===================================*/

@@ -7,7 +7,9 @@
 /*=====[Inclusions of function dependencies]=================================*/
 
 #include "timer_config.h"
-#include "app.h"
+#include "main.h"
+#include "io_port_lpc4337_edu_ciia.h"
+#include "application.h"
 #include "osKernel.h"
 #include "osSemaphore.h"
 #include "osQueue.h"
@@ -18,12 +20,15 @@
 
 #define SEMAPHORE_TEST  1
 #define QUEUE_TEST      2
-#define API_TEST        SEMAPHORE_TEST
+#define TP_FINAL_TEST   3
+#define API_TEST        TP_FINAL_TEST
 #define TIMER_RATE      2
 
 /*=====[Definitions of extern global variables]==============================*/
 
 /*=====[Definitions of private methods]======================================*/
+
+#if (API_TEST != TP_FINAL_TEST)
 
 void SystemClock_Config(void);
 
@@ -35,11 +40,13 @@ static void task3(void);
 
 static void TmrCallback(void);
 
+#endif /* (API_TEST != TP_FINAL_TEST) */
+
 /*=====[Definitions of public global variables]==============================*/
 
 
 /*=====[Definitions of private global variables]=============================*/
-
+#if (API_TEST != TP_FINAL_TEST)
 static osTaskObject osTask1;
 static osTaskObject osTask2;
 static osTaskObject osTask3;
@@ -51,6 +58,7 @@ static osSemaphoreObject semaphore3;
 static osQueueObject queue1;
 static osQueueObject queue2;
 #endif
+#endif /* (API_TEST != TP_FINAL_TEST) */
 /*=====[Main function, program entry point after power on or reset]==========*/
 
 
@@ -60,6 +68,11 @@ int main(void) {
     // ----- Repeat for ever -------------------------
     // Initialize all configured peripherals
     boardConfig();
+    KEYS_Init();
+    
+    #if (API_TEST == TP_FINAL_TEST)
+    applicationStart();
+    #else
     osTaskCreate(&osTask1, 2, task1);
     osTaskCreate(&osTask2, 2, task2);
     osTaskCreate(&osTask3, 1, task3);
@@ -83,6 +96,7 @@ int main(void) {
     // YOU NEVER REACH HERE, because this program runs directly or on a
     // microcontroller and is not called by any Operating System, as in the
     // case of a PC program.
+    #endif
     return 0;
 }
 
@@ -171,8 +185,9 @@ static void task3(void) {
 
 #endif
 
-
+#if (API_TEST != TP_FINAL_TEST)
 static void TmrCallback(void) {
     osSemaphoreGive(&semaphore3);
     osDelay(1000);
 }
+#endif

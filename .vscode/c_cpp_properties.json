@@ -8,7 +8,7 @@
         // "intelliSenseMode": "clang-x64",
         "includePath": ["${myDefaultIncludePath}"],
         // "macFrameworkPath": ["/System/Library/Frameworks"],
-        "defines": ["TICK_OVER_RTOS", "ARCH_NXP_LPC_43XX"],
+        "defines": ["TICK_OVER_RTOS", "ARCH_NXP_LPC_43XX", "BOARD = edu_ciaa_nxp"],
         // "forcedInclude": ["${workspaceFolder}/include/config.h"],
         // "compilerPath": "/usr/bin/clang",
         "cStandard": "c11",

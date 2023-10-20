@@ -187,7 +187,9 @@ static void task3(void) {
 
 #if (API_TEST != TP_FINAL_TEST)
 static void TmrCallback(void) {
+    #if (API_TEST == SEMAPHORE_TEST)
     osSemaphoreGive(&semaphore3);
+    #endif
     osDelay(1000);
 }
 #endif

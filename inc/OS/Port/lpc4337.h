@@ -20,6 +20,8 @@
 /* ========= [Definition of public macros] =========================================== */
 
 #define IRQ_NUMBER      53                  ///< Number of interrupts supported by the MCU.
+#define FIRST_IRQ       Reset_IRQn          ///< First IRQ defined in manufacturer list.
+#define LAST_IRQ        QEI_IRQn            ///< Last IRQ defined in manufacturer list.
 
 /* ========= [Definition of public data types] ======================================= */
 

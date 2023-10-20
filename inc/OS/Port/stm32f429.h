@@ -18,6 +18,8 @@
 /* ========= [Definition of public macros] =========================================== */
 
 #define IRQ_NUMBER      91                  ///< Number of interrupts supported by the MCU.
+#define FIRST_IRQ       NonMaskableInt_IRQn ///< First IRQ defined in manufacturer list.
+#define LAST_IRQ        DMA2D_IRQn          ///< Last IRQ defined in manufacturer list.
 
 /* ========= [Definition of public data types] ======================================= */
 

@@ -93,7 +93,7 @@
 /* ========= [Definition of public methods] ========================================== */
 
 /**
- * @brief Get Logic State of am specific pin.
+ * @brief Get the logical state of a specific pin.
  *
  * @param pin
  * @param port

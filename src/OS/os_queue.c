@@ -57,6 +57,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
             OS_KERNEL_ExitCritical();
         }
         if (queue_obj->used_elements < queue_obj->n_elements) {
+            OS_KERNEL_EnterCritical();
             memcpy(queue_obj->push_element, data, queue_obj->data_size);
             queue_obj->push_element += queue_obj->data_size;
             if (queue_obj->push_element - (queue_obj->fifo_ptr - 1) >= BYTES_OF_QUEUE(queue_obj->data_size, queue_obj->n_elements)) {
@@ -73,6 +74,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
                 OS_METHODS_SetTaskAsReady(task_handler);
                 OS_KERNEL_PortYield();
             }
+            OS_KERNEL_ExitCritical();
             ret = true;
         }
     }

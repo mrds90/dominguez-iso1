@@ -305,15 +305,15 @@ tick_type_t OS_KERNEL_GetTickCount(void) {
     return os_kernel.sys_tick;
 }
 
-void                                                                                          OS_KERNEL_Delay(const tick_type_t tick) {
+void OS_KERNEL_Delay(const tick_type_t tick) {
     if (((tick > 0) || (tick == OS_MAX_DELAY)) && (os_kernel.status == OS_STATUS_RUNNING)) {
-        NVIC_DisableIRQ(SysTick_IRQn);
+        OS_KERNEL_EnterCritical();
 
         OS_DELAY_SetDelay(tick, os_kernel.current_task);
 
         SchedulingAndChageOfContext();
 
-        NVIC_EnableIRQ(SysTick_IRQn);
+        OS_KERNEL_ExitCritical();
     }
 }
 

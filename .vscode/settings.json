@@ -28,6 +28,7 @@
         "lpc_types.h": "c",
         "application.h": "c",
         "gpiowrapper.h": "c",
-        "io_port_lpc4337_edu_ciaa.h": "c"
+        "io_port_lpc4337_edu_ciaa.h": "c",
+        "core_cm4.h": "c"
     }
 }

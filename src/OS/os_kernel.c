@@ -396,7 +396,7 @@ static void Scheduler(void) {
                 break;
             }
         }
-        if ((i == os_kernel.current_task->priority) && (os_kernel.current_task->status == OS_TASK_RUNNING) || (os_kernel.current_task != *os_kernel.next_task)) {
+        if (((i == os_kernel.current_task->priority) && (os_kernel.current_task->status == OS_TASK_RUNNING)) || (os_kernel.current_task != *os_kernel.next_task)) {
             break;
         }
     }

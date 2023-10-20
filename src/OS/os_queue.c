@@ -67,7 +67,7 @@ bool OS_QUEUE_Send(queue_t *queue_obj, const void *data, const tick_type_t timeo
 
             if (queue_obj->pop_task != queue_obj->push_task) {
                 os_task_t *task_handler = *queue_obj->pop_task;
-                *queue_obj->pop_task++;
+                queue_obj->pop_task++;
                 if (queue_obj->pop_task == &queue_obj->task_list[MAX_NUMBER_TASK]) {
                     queue_obj->pop_task = queue_obj->task_list;
                 }
@@ -105,7 +105,7 @@ bool OS_QUEUE_Receive(queue_t *queue_obj, void *data, const tick_type_t timeout)
 
             if (queue_obj->pop_task != queue_obj->push_task) {
                 os_task_t *task_handler = *queue_obj->pop_task;
-                *queue_obj->pop_task++;
+                queue_obj->pop_task++;
                 if (queue_obj->pop_task == &queue_obj->task_list[MAX_NUMBER_TASK]) {
                     queue_obj->pop_task = queue_obj->task_list;
                 }
